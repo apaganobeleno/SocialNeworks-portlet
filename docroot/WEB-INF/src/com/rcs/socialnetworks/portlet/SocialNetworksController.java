@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.ModelAndView;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.google.gson.stream.JsonWriter;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -48,6 +49,7 @@ public class SocialNetworksController {
 		 "}" +
 		"}";
 		model.put("jsonContacts", jsonContacts);
-		return new ModelAndView("view", model);
+		log.info("info" + jsonContacts);
+		return new ModelAndView("views/view", model);
 	}
 }
