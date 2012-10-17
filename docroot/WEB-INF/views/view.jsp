@@ -27,9 +27,9 @@
       var network = null;      
       
       var jsonContacts = '${jsonContacts}';
-      console.log(jsonContacts);
+      //console.log(jsonContacts);
       var objContacts = JSON.parse(jsonContacts);
-      console.log(objContacts);
+      //console.log(objContacts);
       google.load('visualization', '1');
       
       // Set callback to run when API is loaded
@@ -40,27 +40,39 @@
         // Create a data table with nodes.
         nodesTable = new google.visualization.DataTable();
         nodesTable.addColumn('number', 'id');
+        nodesTable.addColumn('string', 'text');   // optional
         
         // Create a data table with links.
         linksTable = new google.visualization.DataTable();
         linksTable.addColumn('number', 'from');
-        linksTable.addColumn('number', 'to');
-
-        nodesTable.addRow([1]);
-        nodesTable.addRow([2]);
-        nodesTable.addRow([3]);
+        linksTable.addColumn('number', 'to');		
+        //add the central node, it's me!        
+        nodesTable.addRow([0, 'Me']);
+        console.log(objContacts);
+		for (var key in objContacts) {
+    	   	var obj = objContacts[key];    	   	    		
+	 	   	// iterat through contacts
+	 	   	for (var prop in obj) {	 		   	
+ 	       		//console.log(prop + " = " + obj[prop]);
+ 	       		var data = obj[prop];	 	       	
+				nodesTable.addRow([data['id'], data['firstname'] + ' ' + data['lastname']]);
+				linksTable.addRow([0, data['id']]);
+	 	   	}
+    	}
         
-        linksTable.addRow([1, 2]);
-        linksTable.addRow([3, 2]);
+        //nodesTable.addRow([2]);
+        //nodesTable.addRow([3]);
         
-     // specify options
+        //linksTable.addRow([1, 2]);
+        //linksTable.addRow([3, 2]);
+        
+     	// specify options
         var options = {
           'width': '600px', 
           'height': '600px',
           'stabilize': false   // stabilize positions before displaying
         };
-     
-     	
+          	
         // Instantiate our graph object.
         network = new links.Network(document.getElementById('mynetwork'));
 
