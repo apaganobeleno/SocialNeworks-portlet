@@ -25,8 +25,8 @@ public class SocialNetworksController {
 	@RenderMapping
 	public ModelAndView resolveView(PortletRequest request, PortletResponse response) throws PortalException, SystemException {
 		Map<String, Object> model = new HashMap<String, Object>();
-		String jsonContacts = " {\"person\": {" + 
-		   "\"id\": \"1\"," +
+		String jsonContacts = " {\"person\": [{" + 
+		   "\"id\": 1," +
 		   "\"firstname\": \"Mariano\"," +
 		   "\"lastname\": \"Perez\"," +
 		   "\"socialnetworks\": {" +
@@ -36,8 +36,8 @@ public class SocialNetworksController {
 		       "{\"value\": \"googleplus\"}" +
 		     "]" +
 		   "}"+
-		 "}," +
-		   "\"id\": \"2\"," +
+		 "},{" +
+		   "\"id\": 2," +
 		   "\"firstname\": \"Susana\"," +
 		   "\"lastname\": \"Hernandez\"," +
 		   "\"socialnetworks\": {" +
@@ -46,6 +46,7 @@ public class SocialNetworksController {
 		       "{\"value\": \"facebook\"}" +
 		     "]" +
 		   "}" +		 
+		  "}]" +
 		"}";
 		model.put("jsonContacts", jsonContacts);
 		log.info("info" + jsonContacts);
