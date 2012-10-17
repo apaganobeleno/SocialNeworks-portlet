@@ -36,7 +36,7 @@ public class SocialNetworksController {
 		       "{\"value\": \"googleplus\"}" +
 		     "]" +
 		   "}"+
-		 "},{" +
+		 "}," +
 		   "\"id\": \"2\"," +
 		   "\"firstname\": \"Susana\"," +
 		   "\"lastname\": \"Hernandez\"," +
@@ -45,8 +45,7 @@ public class SocialNetworksController {
 		       "{\"value\": \"linkedin\"}," +
 		       "{\"value\": \"facebook\"}" +
 		     "]" +
-		   "}" +
-		 "}" +
+		   "}" +		 
 		"}";
 		model.put("jsonContacts", jsonContacts);
 		log.info("info" + jsonContacts);
