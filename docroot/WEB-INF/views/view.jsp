@@ -28,8 +28,8 @@
       
       var jsonContacts = '${jsonContacts}';
       console.log(jsonContacts);
-      //var objContacts = JSON.parse(jsonContacts);
-      //alert(objContacts);
+      var objContacts = JSON.parse(jsonContacts);
+      console.log(objContacts);
       google.load('visualization', '1');
       
       // Set callback to run when API is loaded
