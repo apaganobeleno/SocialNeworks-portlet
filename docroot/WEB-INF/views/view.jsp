@@ -17,7 +17,9 @@
 <%@taglib prefix="portlet" uri="http://java.sun.com/portlet" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jstl/fmt" %>
-
+<%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
+<%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
+<liferay-theme:defineObjects /> 
 <portlet:defineObjects />
 
 <script type="text/javascript">
@@ -25,7 +27,7 @@
       var linksTable = null;
       var packagesTable = null;
       var network = null;      
-      
+      var imageDIR = "<%=request.getContextPath()%>/img/";
       var jsonContacts = '${jsonContacts}';
       //console.log(jsonContacts);
       var objContacts = JSON.parse(jsonContacts);
@@ -41,22 +43,61 @@
         nodesTable = new google.visualization.DataTable();
         nodesTable.addColumn('number', 'id');
         nodesTable.addColumn('string', 'text');   // optional
+        nodesTable.addColumn('string', 'image');  // optional
+        nodesTable.addColumn('string', 'style');   // optional
         
         // Create a data table with links.
         linksTable = new google.visualization.DataTable();
         linksTable.addColumn('number', 'from');
-        linksTable.addColumn('number', 'to');		
+        linksTable.addColumn('number', 'to');
+        
+        // Create a data table with packages.
+    	packagesTable = new google.visualization.DataTable();
+        packagesTable.addColumn('number', 'from');
+        packagesTable.addColumn('number', 'to');
+        packagesTable.addColumn('number', 'progress');  // optional
+        packagesTable.addColumn('string', 'image');  // optional
+        packagesTable.addColumn('string', 'style');  // optional
+
         //add the central node, it's me!        
-        nodesTable.addRow([0, 'Me']);
-        console.log(objContacts);
+        nodesTable.addRow([0, 'Me', imageDIR + 'user_portrait.png', 'image']);        
 		for (var key in objContacts) {
     	   	var obj = objContacts[key];    	   	    		
 	 	   	// iterat through contacts
 	 	   	for (var prop in obj) {	 		   	
  	       		//console.log(prop + " = " + obj[prop]);
  	       		var data = obj[prop];	 	       	
-				nodesTable.addRow([data['id'], data['firstname'] + ' ' + data['lastname']]);
-				linksTable.addRow([0, data['id']]);
+				nodesTable.addRow([data['id'], data['firstname'] + ' ' + data['lastname'], imageDIR + data['picture'], 'image']);
+				linksTable.addRow([0, data['id']]);				
+				console.log(data['id']);
+				console.log(data['socialnetworks']);
+				var socialnetworks = data['socialnetworks'];
+				var distance = 0.3;
+				//@@ count the amount of social networks
+				for(var socialnetwork in socialnetworks) {
+					var socialnetworkData = socialnetworks[socialnetwork];
+					console.log(socialnetworkData);
+					for(var value in socialnetworkData) {
+						var img;
+						console.log(socialnetworkData[value]);
+						var dataValue = socialnetworkData[value];
+						if(dataValue['value'] == 'googleplus') {
+							img = imageDIR + 'googleplus-logo.png';						
+						}
+						if(dataValue['value'] == 'linkedin') {
+							img = imageDIR + 'linkedin-logo.png';
+						}
+						if(dataValue['value'] == 'facebook') {
+							img = imageDIR + 'facebook-logo.png';
+						}
+						packagesTable.addRow([0, data['id'], distance, img, 'image']);
+						distance = distance + 0.2;
+						console.log(img);
+					}
+					
+					
+				}
+				
 	 	   	}
     	}
         
@@ -70,7 +111,12 @@
         var options = {
           'width': '600px', 
           'height': '600px',
-          'stabilize': false   // stabilize positions before displaying
+          'stabilize': false,   // stabilize positions before displaying
+          'nodes': {
+              // default for all nodes
+        	  "widthMax": 30
+        	  ,"distance": 200
+            }
         };
           	
         // Instantiate our graph object.
