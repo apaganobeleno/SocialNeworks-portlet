@@ -9,6 +9,7 @@
 		<supports>
 			<mime-type>text/html</mime-type>
 		</supports>
+		<resource-bundle>content.Language</resource-bundle>
 		<portlet-info>
 			<title>SocialNeworks</title>
 			<short-title>SocialNeworks</short-title>
