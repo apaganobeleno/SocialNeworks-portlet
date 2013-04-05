@@ -60,39 +60,55 @@
         packagesTable.addColumn('string', 'style');  // optional
 
         //add the central node, it's me!        
-        nodesTable.addRow([0, 'Me', imageDIR + 'user_portrait.png', 'image']);        
+        nodesTable.addRow([0, 'Me', '<%=user.getPortraitURL(themeDisplay) %>', 'image']);        
 		for (var key in objContacts) {
     	   	var obj = objContacts[key];    	   	    		
 	 	   	// iterat through contacts
 	 	   	for (var prop in obj) {	 		   	
  	       		//console.log(prop + " = " + obj[prop]);
  	       		var data = obj[prop];	 	       	
-				nodesTable.addRow([data['id'], data['firstname'] + ' ' + data['lastname'], imageDIR + data['picture'], 'image']);
+				nodesTable.addRow([data['id'], data['firstName'] + ' ' + data['lastName'], "http://" + data['pictureURL'], 'image']);
 				linksTable.addRow([0, data['id']]);				
 				console.log(data['id']);
-				console.log(data['socialnetworks']);
-				var socialnetworks = data['socialnetworks'];
+				console.log(data['socialNetworks']);
+				var socialnetworks = data['socialNetworks'];
 				var distance = 0.3;
-				//@@ count the amount of social networks
+				
+				//@@ check why it doesnt show the logo for only one SN
 				for(var socialnetwork in socialnetworks) {
 					var socialnetworkData = socialnetworks[socialnetwork];
 					console.log(socialnetworkData);
 					for(var value in socialnetworkData) {
-						var img;
-						console.log(socialnetworkData[value]);
-						var dataValue = socialnetworkData[value];
-						if(dataValue['value'] == 'googleplus') {
+						var img = '';
+						console.log("socialnetworkData[value]: " + socialnetworkData[value]);
+						var dataValue = socialnetworkData[value];						
+						if(dataValue == 'googleplus') {
 							img = imageDIR + 'googleplus-logo.png';						
 						}
-						if(dataValue['value'] == 'linkedin') {
+						if(dataValue == 'linkedin') {
 							img = imageDIR + 'linkedin-logo.png';
 						}
-						if(dataValue['value'] == 'facebook') {
+						if(dataValue == 'facebook') {
 							img = imageDIR + 'facebook-logo.png';
 						}
+						if(dataValue == 'liferay') {
+							img = imageDIR + 'liferay-logo.png';
+						}
+						/*if(dataValue['socialNetworkName'] == 'googleplus') {
+							img = imageDIR + 'googleplus-logo.png';						
+						}
+						if(dataValue['socialNetworkName'] == 'linkedin') {
+							img = imageDIR + 'linkedin-logo.png';
+						}
+						if(dataValue['socialNetworkName'] == 'facebook') {
+							img = imageDIR + 'facebook-logo.png';
+						}
+						if(dataValue['socialNetworkName'] == 'liferay') {
+							img = imageDIR + 'liferay-logo.png';
+						}*/
+						console.log("img: " + img);						
 						packagesTable.addRow([0, data['id'], distance, img, 'image']);
-						distance = distance + 0.2;
-						console.log(img);
+						distance = distance + 0.2;						
 					}
 					
 					
@@ -114,8 +130,13 @@
           'stabilize': false,   // stabilize positions before displaying
           'nodes': {
               // default for all nodes
-        	  "widthMax": 30
-        	  ,"distance": 200
+        	  //'widthMax': 10 //probar con width solo
+        	  //,'widthMin':5
+        	  'radius': 50
+        	  //,'radiusMin': 2
+              //,'radiusMax': 7
+        	  ,'distance': 200
+        	  ,'style': 'image'
             }
         };
           	
