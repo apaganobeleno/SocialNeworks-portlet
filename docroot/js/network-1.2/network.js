@@ -3109,16 +3109,21 @@ links.Network.Node.prototype.isOverlappingWith = function(obj) {
 
 links.Network.Node.prototype._drawImage = function (ctx) {
     // TODO: pre calculate the image size
-    var width, height;
+    var width, height;    
+    this.nodes
     if (this.value) {
-        var scale = this.imageObj.height / this.imageObj.width;
+        var scale = this.imageObj.height / this.imageObj.width;                
         width = this.radius || this.imageObj.width;
         height = this.radius * scale || this.imageObj.height;
     }
     else {
-        width = this.imageObj.width;
-        height = this.imageObj.height;
+        /*width = this.imageObj.width;
+        height = this.imageObj.height;*/
+    	var scale = this.imageObj.height / this.imageObj.width;                
+        width = this.radius || this.imageObj.width;
+        height = this.radius * scale || this.imageObj.height;
     }
+    
     this.left   = this.x - width / 2;
     this.top    = this.y - height / 2;
     this.width  = width;
@@ -3693,7 +3698,7 @@ links.Network.Images.prototype.load = function(url) {
                 images.callback(this);
             }
         };
-        img.src = url;
+        img.src = url;        
     }
 
     return img;
