@@ -10,7 +10,9 @@ public class ContactDTO implements Serializable {
 	private String firstName;
 	private String middleName;
 	private String lastName;
-	private String pictureURL;
+	private String name;
+	private String email;
+	private String pictureURL;	
 	private int pictureHeight; //@@ set default value?
 	private int pictureWidth;
 	
@@ -63,6 +65,18 @@ public class ContactDTO implements Serializable {
 	}
 	public void setPictureWidth(int pictureWidth) {
 		this.pictureWidth = pictureWidth;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 }
