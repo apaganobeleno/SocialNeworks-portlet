@@ -29,14 +29,17 @@
       var network = null;      
       var imageDIR = "<%=request.getContextPath()%>/img/";
       var jsonContacts = '${jsonContacts}';
-      //console.log(jsonContacts);
+      console.log(jsonContacts);
       var objContacts = JSON.parse(jsonContacts);
       //console.log(objContacts);
       google.load('visualization', '1');
       
       // Set callback to run when API is loaded
       google.setOnLoadCallback(drawVisualization); 
-
+		
+      function isBlank(str) {
+    	    return (!str || /^\s*$/.test(str));
+      }
       // Called when the Visualization API is loaded.
       function drawVisualization() {
         // Create a data table with nodes.
@@ -58,7 +61,7 @@
         packagesTable.addColumn('number', 'progress');  // optional
         packagesTable.addColumn('string', 'image');  // optional
         packagesTable.addColumn('string', 'style');  // optional
-
+		
         //add the central node, it's me!        
         nodesTable.addRow([0, 'Me', '<%=user.getPortraitURL(themeDisplay) %>', 'image']);        
 		for (var key in objContacts) {
@@ -66,11 +69,15 @@
 	 	   	// iterat through contacts
 	 	   	for (var prop in obj) {	 		   	
  	       		//console.log(prop + " = " + obj[prop]);
- 	       		var data = obj[prop];	 	       	
-				nodesTable.addRow([data['id'], data['firstName'] + ' ' + data['lastName'], "http://" + data['pictureURL'], 'image']);
-				linksTable.addRow([0, data['id']]);				
-				console.log(data['id']);
-				console.log(data['socialNetworks']);
+ 	       		var data = obj[prop];
+ 	       		var name = '';  	       		
+ 	       		if(!isBlank(data['lastName'])) {
+ 	       			name = data['firstName'] + ' ' + data['lastName']; 	       			
+ 	       		} else {
+ 	       			name = data['name']; 	       			
+ 	       		} 	       		
+				nodesTable.addRow([data['id'], name, data['pictureURL'], 'image']);
+				linksTable.addRow([0, data['id']]);								
 				var socialnetworks = data['socialNetworks'];
 				var distance = 0.3;
 				
@@ -79,14 +86,13 @@
 					var socialnetworkData = socialnetworks[socialnetwork];
 					console.log(socialnetworkData);
 					for(var value in socialnetworkData) {
-						var img = '';
-						console.log("socialnetworkData[value]: " + socialnetworkData[value]);
+						var img = '';						
 						var dataValue = socialnetworkData[value];						
 						if(dataValue == 'googleplus') {
 							img = imageDIR + 'googleplus-logo.png';						
 						}
 						if(dataValue == 'linkedin') {
-							img = imageDIR + 'linkedin-logo.png';
+							img = imageDIR + 'linkedin-logo.jpg';
 						}
 						if(dataValue == 'facebook') {
 							img = imageDIR + 'facebook-logo.png';
@@ -94,19 +100,9 @@
 						if(dataValue == 'liferay') {
 							img = imageDIR + 'liferay-logo.png';
 						}
-						/*if(dataValue['socialNetworkName'] == 'googleplus') {
-							img = imageDIR + 'googleplus-logo.png';						
-						}
-						if(dataValue['socialNetworkName'] == 'linkedin') {
-							img = imageDIR + 'linkedin-logo.png';
-						}
-						if(dataValue['socialNetworkName'] == 'facebook') {
-							img = imageDIR + 'facebook-logo.png';
-						}
-						if(dataValue['socialNetworkName'] == 'liferay') {
-							img = imageDIR + 'liferay-logo.png';
-						}*/
-						console.log("img: " + img);						
+						if(dataValue == 'twitter') {
+							img = imageDIR + 'twitter-logo.jpg';
+						}											
 						packagesTable.addRow([0, data['id'], distance, img, 'image']);
 						distance = distance + 0.2;						
 					}
@@ -151,4 +147,5 @@
 </script>
 This is the <b>SocialNeworks</b> portlet.
 
+<jsp:include page="navigation.jsp" />
 <div id="mynetwork"></div>
