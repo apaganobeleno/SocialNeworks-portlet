@@ -1,5 +1,6 @@
 package com.rcs.socialnetworks;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -38,10 +39,10 @@ public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData
 	public static final String socialNetworkAccessTokenField = "socialNetworkAccessTokenField";//@@ check this later
 	
 	public static final String socialNetworkTokenSecretField = "socialNetworkTokenSecretField";
-	
+		
 	//@@ add expiration field?
 	
-	private User user;
+	private User user;	
 	
 	public SocialNetworkOAuthUtil(PortletRequest portletRequest) {
 		this.portletRequest = portletRequest;
@@ -93,8 +94,7 @@ public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData
     	PortletDisplay portletDisplay= themeDisplay.getPortletDisplay();
     	String portletId= portletDisplay.getId();
     	HttpServletRequest request = PortalUtil.getHttpServletRequest(portletRequest);    	
-		javax.portlet.PortletURL portletURL = PortletURLFactoryUtil.create(request, portletId, themeDisplay.getPlid(), PortletRequest.RENDER_PHASE);
-		//String redirectURL = HttpUtil.addParameter(portletURL.toString(), "p_p_id", portletDisplay.getId()); //@@ change the name of the portlet
+		javax.portlet.PortletURL portletURL = PortletURLFactoryUtil.create(request, portletId, themeDisplay.getPlid(), PortletRequest.RENDER_PHASE);		//
 		String redirectURL = HttpUtil.addParameter(portletURL.toString(), "p_p_state", "normal"); //@@ change the name of the portlet
 		//redirectURL = HttpUtil.addParameter(redirectURL, "p_p_state", "normal");
 		redirectURL = HttpUtil.addParameter(redirectURL, "p_p_mode", "view");
@@ -169,14 +169,19 @@ public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData
 		return field;
 	}
 	
-	public void setExpandoField(String fieldName, String field) {		
+	public void setExpandoField(String fieldName, Object field) {		
 		if(this.getUser() != null) {
 			try {
+				if(field instanceof String)
+					this.getUser().getExpandoBridge().setAttribute(fieldName, (String) field);
+				
+				if(field instanceof Long)
+					this.getUser().getExpandoBridge().setAttribute(fieldName, (Long) field);
 				//User user = PortalUtil.getUser(servletRequest);
 				//User user = this.getUser();
 				//getExpandoAccessToken
 				//getExpandoTokenSecret
-				this.getUser().getExpandoBridge().setAttribute(fieldName, field);						    
+										    
 			} catch (Exception ignored) {				
 			}
 		}		
@@ -187,10 +192,19 @@ public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData
 	}
 	
 	public boolean isSocialNetworkOAuthRequest(HttpServletRequest request) {		
-		return StringUtils.isNotBlank(request.getParameter("socialnetwork")) 
+				
+		if(StringUtils.isNotBlank(request.getParameter("socialnetwork")) 
 				&& StringUtils.equals(getSocialNetworkName(), request.getParameter("socialnetwork"))
 				&& StringUtils.isNotBlank(request.getParameter(OAuth.OAUTH_TOKEN)) 
-				&& request.getSession().getAttribute(getRequestTokenName()) != null;					
+				&& request.getSession().getAttribute(getRequestTokenName()) != null)
+			return true;
+		
+		if(StringUtils.isNotBlank(request.getParameter("socialnetwork")) 
+				&& StringUtils.equals(getSocialNetworkName(), request.getParameter("socialnetwork"))
+				&& StringUtils.isNotBlank(request.getParameter("code")))
+			return true;
+		
+		return false;
 	}
 	
 	public void storeAccessToken(String accessToken, String tokenSecret) {
