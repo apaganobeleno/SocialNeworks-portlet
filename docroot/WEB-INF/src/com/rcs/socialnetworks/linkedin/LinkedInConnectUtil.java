@@ -17,6 +17,7 @@ import com.google.code.linkedinapi.schema.Person;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.User;
 import com.liferay.portal.theme.PortletDisplay;
@@ -59,6 +60,8 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
 	
 	public static final String socialNetworkRequestTokenField = "linkedinRequestToken";
 	
+	public static final String socialNetworkExpirationTimeField = "linkedinExpirationTime";	
+		
     private LinkedInOAuthService oAuthService;
     
     private String redirectURL;
@@ -69,6 +72,7 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
 
     private Person linkedInPerson;
 
+    private LinkedInApiClient linkedInClient;
     //private PortletRequest portletRequest;
     
     //private User user;
@@ -244,32 +248,10 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
 	
 	//@@check override
 	@Override
-    public boolean isEnabled() {
+    public boolean isEnabled() { //@@change later
         return true;
     }
-/*
-    public static LinkedInConnect getLinkedInConnect() {
-        if (LinkedInConnectUtil.linkedInConnect == null) {
-            LinkedInConnectUtil.linkedInConnect = new LinkedInConnectImpl();
-        }
-        return LinkedInConnectUtil.linkedInConnect;
-    }
-
-    public static void setLinkedInConnect(LinkedInConnect linkedInConnect) {
-        LinkedInConnectUtil.linkedInConnect = linkedInConnect;
-    }
-    
-    
-    
-    public boolean getLinkedInAccessToken(User user) throws SystemException {
-    	boolean userHasLinkedinAccount = false;
-    	LinkedInAccessToken linkedinAccessToken = this.getLinkedInAccessToken(portletRequest);        	
-    	if(linkedinAccessToken != null) {
-    		userHasLinkedinAccount = true;
-    	}
-    	return userHasLinkedinAccount;
-    }
- */   
+   
     // in a future, return a LocalResponse object: issuccess, message, LinkedInAccessToken
 	@Override
     public LinkedInAccessToken getAccessToken() {
@@ -331,41 +313,9 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
     	if(isSocialNetworkOAuthRequest(originalServletRequest)) {
     		String oauthVerifier = originalServletRequest.getParameter(OAuth.OAUTH_VERIFIER);	        
 	        LinkedInRequestToken requestToken = (LinkedInRequestToken) session.getAttribute(getRequestTokenName());
-	        //LinkedInOAuthService oAuthService = this.getLinkedInOAuthService();
-	        //linkedinAccessToken = oAuthService.getOAuthAccessToken(requestToken, oauthVerifier);
 	        accessToken = this.getAccessToken(requestToken, oauthVerifier);
-	        this.storeAccessToken(accessToken);
-	        //parseAndStoreAccessToken
-//          if (linkedinAccessToken != null) {                	
-//              this.setAccessToken(linkedinAccessToken);                    
-//              User user = PortalUtil.getUser(servletRequest);
-//      		user.getExpandoBridge().setAttribute("linkedinAccessToken", linkedinAccessToken.getToken().toString());
-//      		user.getExpandoBridge().setAttribute("linkedinTokenSecret", linkedinAccessToken.getTokenSecret().toString());
-//      		user.getExpandoBridge().setAttribute("linkedinExpirationTime", linkedinAccessToken.getExpirationTime().getTime());
-//      		return linkedinAccessToken;
-//          }	
+	        this.storeAccessToken(accessToken);	        
     	}
-//    	HttpServletRequest originalServletRequest = PortalUtil.getOriginalServletRequest(PortalUtil.getHttpServletRequest(portletRequest));
-//    	//boolean isLinkedinOAuthRequest = originalServletRequest.getParameter("socialnetwork") != null && StringUtils.equals("linkedin", originalServletRequest.getParameter("socialnetwork"));
-//    	if(isSocialNetworkOAuthRequest(originalServletRequest) && originalServletRequest.getParameter(OAuth.OAUTH_TOKEN) != null && session.getAttribute("requestToken") != null) {
-//    		//@@ que el session requestToken sea igual al que viene en la url
-//			String oauthVerifier = originalServletRequest.getParameter(OAuth.OAUTH_VERIFIER);	        
-//	        LinkedInRequestToken requestToken = (LinkedInRequestToken) session.getAttribute("requestToken");	        	        
-//	        try {	            
-//                LinkedInOAuthService oAuthService = this.getLinkedInOAuthService();
-//                linkedinAccessToken = oAuthService.getOAuthAccessToken(requestToken, oauthVerifier);
-//                if (linkedinAccessToken != null) {                	
-//                    this.setAccessToken(linkedinAccessToken);                    
-//                    User user = PortalUtil.getUser(servletRequest);
-//            		user.getExpandoBridge().setAttribute("linkedinAccessToken", linkedinAccessToken.getToken().toString());
-//            		user.getExpandoBridge().setAttribute("linkedinTokenSecret", linkedinAccessToken.getTokenSecret().toString());
-//            		user.getExpandoBridge().setAttribute("linkedinExpirationTime", linkedinAccessToken.getExpirationTime().getTime());
-//            		return linkedinAccessToken;
-//                }	           
-//	        } catch (Exception ignored) {
-//	            return null;
-//	        }
-//		}
     	return accessToken;
     }
     
@@ -384,7 +334,8 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
     	String consumerKey = this.getApiKey();
         String consumerSecret = this.getApiSecret();        
         LinkedInApiClientFactory clientFactory = LinkedInApiClientFactory.newInstance(consumerKey, consumerSecret);                
-        LinkedInApiClient client = clientFactory.createLinkedInApiClient(linkedinAccessToken);                    			    			    	
+        LinkedInApiClient client = clientFactory.createLinkedInApiClient(linkedinAccessToken);
+        this.linkedInClient = client;
 		Connections connections = client.getConnectionsForCurrentUser();
     	if(connections != null) {    		
 			List<Person> persons = connections.getPersonList(); //@@ ver cómo chequear esto
@@ -453,16 +404,12 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
     	return contacts;
     }
 
-    /*
-	@Override
-	public boolean currentUserHasAccount(PortletRequest portletRequest)
-			throws SystemException {
-		// TODO Auto-generated method stub
-		return false;
-	}*/
     @Override
 	public String getApiKey() {
-    	return "g0o36a8yuz5s";
+    	if(apiKey == null) { //@@ hacerlo de manera más automática
+    		apiKey = PropsUtil.get("linkedin.default.connect.app.id");
+    	}
+    	return apiKey;
 		/*if(LinkedInConnectUtil.apiKey == null) {
 			LinkedInConnectUtil.apiKey = "g0o36a8yuz5s"; //@@change later
 		}
@@ -471,75 +418,16 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
 	//@@ override or not?
     @Override
 	public String getApiSecret() {
-    	return "aWXvd3XmboW0rRa1";
+    	if(apiSecret == null) {
+    		apiSecret = PropsUtil.get("linkedin.default.connect.app.secret");
+    	}
+    	return apiSecret;
 		/*if(LinkedInConnectUtil.apiSecret == null) {
 			LinkedInConnectUtil.apiSecret = "aWXvd3XmboW0rRa1"; //@@change later, and change to appSecret
 		}
 		return LinkedInConnectUtil.apiSecret;*/
 	}
 
-	//@@ storeapisecret & api key?
-/*
-	public User getUser() {
-		if(this.user == null && this.portletRequest != null) {
-			try {
-				this.user = PortalUtil.getUser(this.portletRequest);
-			} catch(Exception ignored) { }			
-		}
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}*/
-/*
-	@Override
-	public List<ContactDTO> addContacts(PortletRequest portletRequest, List<ContactDTO> contacts) {
-		// TODO Auto-generated method stub
-		return null;
-	}*/
-
-//	@Override
-//	public boolean currentUserHasAccount(PortletRequest portletRequest) {
-//		// TODO Auto-generated method stub
-//		return false;
-//	}
-//
-//	@Override
-//	public boolean currentUserHasAccount() {
-//		// TODO Auto-generated method stub
-//		return false;
-//	}
-/*
-	@Override
-	public Object getAccessToken(Object requestToken, String oAuthVerifier) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object getRequestToken() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Object getRequestToken(String redirectURL) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-*/
-//	@Override
-//	public List addContactAndCheckDuplicated(List contacts, Object contact) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-/*
-	@Override
-	public List addContacts(List contacts) {
-		// TODO Auto-generated method stub
-		return null;
-	}*/
 
 	@Override
 	public List<ContactDTO> addContacts(PortletRequest portletRequest,
@@ -572,6 +460,34 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
 	@Override
 	public void storeAccessToken(LinkedInAccessToken accessToken) {
 		this.storeAccessToken(accessToken.getToken(), accessToken.getTokenSecret());
+		this.setExpandoField(socialNetworkExpirationTimeField, new Long(accessToken.getExpirationTime().getTime()));
 		//store expiration time
+	}
+	
+	@Override
+	public Person getSocialNetworkCurrentUser() {
+		if(this.linkedInPerson != null) {
+			return linkedInPerson;
+		} else if(this.linkedInClient != null){
+			this.linkedInPerson = this.linkedInClient.getProfileForCurrentUser();	        
+		} else {
+			LinkedInApiClientFactory clientFactory = LinkedInApiClientFactory.newInstance(getApiKey(), getApiSecret());                
+	        LinkedInApiClient client = clientFactory.createLinkedInApiClient(this.getAccessToken());
+	        this.linkedInClient = client;
+	        this.linkedInPerson = this.linkedInClient.getProfileForCurrentUser();
+		}
+		return linkedInPerson;
+	}
+	
+	public String getPictureURLFromSocialNetworkCurrentUser() {
+		String pictureURL = "";
+		if(this.linkedInPerson != null) {
+			pictureURL = this.linkedInPerson.getPictureUrl();		
+		} else {
+			Person person = this.getSocialNetworkCurrentUser();
+			this.linkedInPerson = person;
+			pictureURL = person.getPictureUrl();
+		}
+		return pictureURL;
 	}
 }
