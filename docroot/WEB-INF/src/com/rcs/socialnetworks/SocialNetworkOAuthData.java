@@ -34,6 +34,8 @@ public interface SocialNetworkOAuthData<RequestToken,AccessToken,Contact> {
 	
 	public AccessToken getAccessToken(RequestToken requestToken, String oAuthVerifier);
 	
+	public void setAccessToken(AccessToken accessToken);
+	
 	public RequestToken getRequestToken();
 	
 	public RequestToken getRequestToken(String redirectURL);
@@ -41,5 +43,9 @@ public interface SocialNetworkOAuthData<RequestToken,AccessToken,Contact> {
 	public List<ContactDTO> addContactAndCheckDuplicated(List<ContactDTO> contacts, Contact contact);
 	
 	public void storeAccessToken(AccessToken accessToken);
+	
+	public Contact getSocialNetworkCurrentUser();
+	
+	public String getPictureURLFromSocialNetworkCurrentUser();
 
 }
