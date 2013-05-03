@@ -55,51 +55,65 @@ public class StartupAction extends SimpleAction {
 		Role user = RoleLocalServiceUtil.getRole(companyId, RoleConstants.USER);
 		try {						
 			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
-					expandoTable.getTableId(), "googleAccessToken",
+					expandoTable.getTableId(), "googleplusAccessToken",
 					ExpandoColumnConstants.STRING);			
-			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_COMPANY, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE });									
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });									
+		} catch (Exception ignored) { }
+		
+		try {						
+			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
+					expandoTable.getTableId(), "googleplusRefreshToken",
+					ExpandoColumnConstants.STRING);			
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });									
+		} catch (Exception ignored) { }
+		
+		try {						
+			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
+					expandoTable.getTableId(), "googleplusExpirationTime",
+					ExpandoColumnConstants.LONG);			
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });									
 		} catch (Exception ignored) { }
 		
 		try {
 			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
 				expandoTable.getTableId(), "twitterAccessToken",
 				ExpandoColumnConstants.STRING);
-			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_COMPANY, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE });
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
 		} catch (Exception ignored) { }
 		
 		try {
 			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
 				expandoTable.getTableId(), "twitterTokenSecret",
 				ExpandoColumnConstants.STRING);
-			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_COMPANY, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE });
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
 		} catch (Exception ignored) { }
 		
 		try {
 			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
 				expandoTable.getTableId(), "twitterExpirationTime",
 				ExpandoColumnConstants.LONG);
-			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_COMPANY, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE });
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
 		} catch (Exception ignored) { }
 		
 		try {					
 			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
 					expandoTable.getTableId(), "linkedinAccessToken",
 					ExpandoColumnConstants.STRING);				
-			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_COMPANY, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE });
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
 		} catch (Exception ignored) { }
 		
 		try {					
 			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
 					expandoTable.getTableId(), "linkedinTokenSecret",
 					ExpandoColumnConstants.STRING);		
-			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_COMPANY, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE });
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
 		} catch (Exception ignored) { }
 		
 		try {					
 			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
 					expandoTable.getTableId(), "linkedinExpirationTime",
 					ExpandoColumnConstants.LONG);
-			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_COMPANY, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE });
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
 		} catch (Exception ignored) { }
 	}
 }
