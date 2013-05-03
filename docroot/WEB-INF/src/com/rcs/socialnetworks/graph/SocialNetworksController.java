@@ -64,6 +64,7 @@ import com.liferay.portlet.expando.service.ExpandoTableLocalServiceUtil;
 import com.liferay.portlet.social.model.SocialRelationConstants;
 import com.rcs.socialnetworks.contact.ContactDTO;
 import com.rcs.socialnetworks.contact.SocialNetworkDTO;
+import com.rcs.socialnetworks.google.GooglePlusConnectUtil;
 import com.rcs.socialnetworks.linkedin.LinkedInConnectUtil;
 import com.rcs.socialnetworks.twitter.TwitterConnectUtil;
 import com.rcs.socialnetworks.utils.LiferayUtil;
@@ -86,89 +87,71 @@ public class SocialNetworksController {
 		Map<String, Object> model = new HashMap<String, Object>();
 		HttpServletRequest request = PortalUtil.getHttpServletRequest(portletRequest);
         HttpSession session = request.getSession();        
-        response.getNamespace();
+        ThemeDisplay themeDisplay= (ThemeDisplay) request.getAttribute(WebKeys.THEME_DISPLAY);
 		// check if user is logged in
 		User user = PortalUtil.getUser(request);		
 		if(user == null) {
 			model.put("errorMessage", "@@ You need to be logged in to see your contacts."); //@@ add to language.properties
 			return new ModelAndView("/WEB-INF/views/error.jsp", model);
-		}			
+		}		
 		
-		
-
-		
+		ContactDTO currentUser = new ContactDTO();
+		currentUser.setFirstName(user.getFirstName());
+		currentUser.setLastName(user.getLastName());
+		currentUser.setEmail(user.getEmailAddress());		
+		if(user.getPortraitId() != 0) {
+			currentUser.setPictureURL(user.getPortraitURL(themeDisplay));
+		}
+		//currentUser.setGender()
 		List<ContactDTO> contacts = new ArrayList<ContactDTO>();
-		/*
+		
 		LinkedInConnectUtil linkedin = new LinkedInConnectUtil(portletRequest);
 		// Check if linkedin is enabled, and the api key and secret added		
-		boolean linkedInEnabled = linkedin.isEnabled();	
+		boolean linkedInEnabled = linkedin.isEnabled();
 		//List<ContactDTO> linkedinContacts = new ArrayList<ContactDTO>();		
         if (linkedInEnabled) {
-        	
-        	log.error("session.getAttribute(requestToken): " + ToStringBuilder.reflectionToString(session.getAttribute("linkedinRequestToken")));
-        	
+        	  	
         	if(linkedin.currentUserHasAccount()) {        		
         		// if we finally have the linkedin access token, then get the linkedin connections            		    			
     			//transform connections to ContactDTO
-    			contacts = linkedin.addContacts(contacts);    			    			    			    			
+    			contacts = linkedin.addContacts(contacts);    			
+    			if(StringUtils.isBlank(currentUser.getPictureURL())) {
+    				currentUser.setPictureURL(linkedin.getPictureURLFromSocialNetworkCurrentUser());
+    			}
         	} else {
-
-                //LinkedInRequestToken requestToken = linkedin.getLinkedInRequestToken(portletRequest);
-                                
-                //session.setAttribute("requestToken", requestToken);                
-                //String linkedInAuthUrl = requestToken.getAuthorizationUrl(); //@@ add this in the class
         		String linkedInAuthUrl = linkedin.getAuthorizationURL(); //@@ add this in the class
-        		//session.setAttribute("requestToken", linkedin.getRequestToken());
                 model.put("linkedInAuthUrl", linkedInAuthUrl);
         	}        	        	        	
-        }*/
-        /*
-        // Check if twitter is enabled, and the api key and secret added		
-        boolean twitterEnabled = TwitterConnectUtil.isEnabled(portletRequest);
-        if (twitterEnabled) {
-        	if(TwitterConnectUtil.currentUserHasTwitterAccount(portletRequest)) {        		
-        		// if we finally have the twitter access token, then get the twitter connections            		    			
-    			//transform connections to ContactDTO
-    			//@@ seguir por acá! imprimir los contactos que agrega!
-    			contacts = TwitterConnectUtil.addContacts(portletRequest, contacts);
-    			log.error("contacts: " + ToStringBuilder.reflectionToString(contacts));
-        	} else {
-        		try {
-        			RequestToken twitterRequestToken = TwitterConnectUtil.getTwitterRequestToken(portletRequest);
-
-                    //session.setAttribute("twitter", twitterRequestToken);@@ check later if this is needed
-                    session.setAttribute("twitterRequestToken", twitterRequestToken);
-                    log.error("requestToken: " + twitterRequestToken);
-                    String twitterAuthUrl = twitterRequestToken.getAuthorizationURL();
-                    log.error("twitterAuthUrl: " + twitterAuthUrl);
-                    model.put("twitterAuthUrl", twitterAuthUrl);
-
-        		} catch(Exception e) {
-        			log.error(e);
-        		}
-        	}
-        }*/
+        }
 		
 		TwitterConnectUtil twitter = new TwitterConnectUtil(portletRequest);
-		 if (twitter.isEnabled()) {
-	        	
-	        	log.error("session.getAttribute(requestToken): " + ToStringBuilder.reflectionToString(session.getAttribute("twitterRequestToken")));
-	        	
+		 if (twitter.isEnabled()) {	        		        		        	
 	        	if(twitter.currentUserHasAccount()) {        		
 	        		// if we finally have the linkedin access token, then get the linkedin connections            		    			
 	    			//transform connections to ContactDTO
-	    			contacts = twitter.addContacts(contacts);    			    			    			    			
+	    			contacts = twitter.addContacts(contacts);
+	    			if(StringUtils.isBlank(currentUser.getPictureURL())) {
+	    				currentUser.setPictureURL(twitter.getPictureURLFromSocialNetworkCurrentUser());
+	    			}
 	        	} else {
-
-	                //LinkedInRequestToken requestToken = linkedin.getLinkedInRequestToken(portletRequest);
-	                                
-	                //session.setAttribute("requestToken", requestToken);                
-	                //String linkedInAuthUrl = requestToken.getAuthorizationUrl(); //@@ add this in the class
 	        		String twitterAuthUrl = twitter.getAuthorizationURL(); //@@ add this in the class
-	        		//session.setAttribute("requestToken", linkedin.getRequestToken());
 	                model.put("twitterAuthUrl", twitterAuthUrl);
 	        	}      
 		 }
+		 
+		GooglePlusConnectUtil googlePlus = new GooglePlusConnectUtil(portletRequest);
+		if(googlePlus.isEnabled()) {
+			log.error("googlePlus.currentUserHasAccount(): " + googlePlus.currentUserHasAccount());
+        	if(googlePlus.currentUserHasAccount()) {    //@@ seguir acá!!        		
+        		// if we finally have the google access token, then get the google connections            		    			
+    			//transform connections to ContactDTO
+    			contacts = googlePlus.addContacts(contacts);
+        	} else {
+        		String googlePlusAuthUrl = googlePlus.getAuthorizationURL();
+                model.put("googlePlusAuthUrl", googlePlusAuthUrl);
+        	}      
+			
+		}
 		// check if Liferay's social networking portlet is installed
 		boolean isFriendsPortletInstalled = false;
 		List<Portlet> portlets = PortletLocalServiceUtil.getPortlets();
@@ -191,7 +174,8 @@ public class SocialNetworksController {
 		String contactsJSON = "";
 		Gson gson = new Gson();
 		contactsJSON = gson.toJson(contacts);		        							
-		model.put("jsonContacts", " {\"person\": " + contactsJSON + "}");				
+		model.put("jsonContacts", " {\"person\": " + contactsJSON + "}");
+		model.put("jsonCurrentUser", gson.toJson(currentUser));
 		return new ModelAndView("/WEB-INF/views/view.jsp", model);	
 	}
 	
