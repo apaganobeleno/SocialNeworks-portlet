@@ -3,6 +3,7 @@
         <%
             Object linkedInAuthUrl = request.getAttribute("linkedInAuthUrl");
             Object twitterAuthUrl = request.getAttribute("twitterAuthUrl");
+            Object googlePlusAuthUrl = request.getAttribute("googlePlusAuthUrl");
         %>
         <li>
             Show contacts from:
@@ -35,6 +36,17 @@
             }
         %>
         <%--</c:if>--%>
-
+		<%
+            if (googlePlusAuthUrl != null) {
+        %>
+        <li>
+            <a href="#" onclick="window.location.href = '${googlePlusAuthUrl}'">
+                <img src="/${pageContext.servletContext.servletContextName}/img/googleplus-logo.jpg" alt="Google Plus" />
+                Google Plus
+            </a>
+        </li>
+        <%
+            }
+        %>
     </ul>
 </div>
