@@ -6,6 +6,7 @@ import java.util.List;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.rcs.socialnetworks.SocialNetworkOAuthData;
 import com.rcs.socialnetworks.SocialNetworkOAuthUtil;
@@ -310,18 +311,18 @@ public static final String socialNetworkName = "linkedin";
 	
 	@Override
 	public String getApiKey() {    	
-		if(TwitterConnectUtil.apiKey == null) {
-			TwitterConnectUtil.apiKey = "sm8ZdXdRwtIuW9UWkXxA"; //@@change later
-		}
-		return TwitterConnectUtil.apiKey;
+		if(apiKey == null) { //@@ hacerlo de manera más automática
+    		apiKey = PropsUtil.get("twitter.default.connect.app.id");
+    	}
+    	return apiKey;		
 	}	
 
     @Override
 	public String getApiSecret() {    	
-		if(TwitterConnectUtil.apiSecret == null) {
-			TwitterConnectUtil.apiSecret = "LBzvfCIso0hFmHte7lCTmG9iTrCwAEEE4xxjg8w"; //@@change later, and change to appSecret
-		}
-		return TwitterConnectUtil.apiSecret;
+    	if(apiSecret == null) {
+    		apiSecret = PropsUtil.get("twitter.default.connect.app.secret");
+    	}
+    	return apiSecret;
 	}
     
 	@Override
@@ -334,4 +335,29 @@ public static final String socialNetworkName = "linkedin";
     public boolean isEnabled() { //@@change later
         return true;
     }
+
+	@Override
+	public User getSocialNetworkCurrentUser() {
+		if(this.twitterUser != null) {
+			return twitterUser;
+		} else {
+			AccessToken accessToken = this.getAccessToken();		
+			Twitter twitter = this.getTwitter();
+			twitter.setOAuthAccessToken(accessToken);
+			try {
+				User user = twitter.showUser(twitter.getScreenName());
+				this.twitterUser = user;
+			} catch (IllegalStateException ignored) {  
+			} catch (TwitterException ignored) { }			
+			return this.twitterUser;
+		}		
+	}
+
+	@Override
+	public String getPictureURLFromSocialNetworkCurrentUser() {
+		if(this.twitterUser == null) {
+			this.twitterUser = getSocialNetworkCurrentUser();
+		}		
+		return this.twitterUser.getProfileImageURL().toString();
+	}
 }
