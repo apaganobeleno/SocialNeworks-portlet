@@ -11,10 +11,13 @@ public class ContactDTO implements Serializable {
 	private String middleName;
 	private String lastName;
 	private String name;
+	private String displayName;
 	private String email;
+	private String locale;
 	private String pictureURL;	
 	private int pictureHeight; //@@ set default value?
 	private int pictureWidth;
+	private int gender;
 	
 	private List <SocialNetworkDTO> socialNetworks = new ArrayList<SocialNetworkDTO>();
 	
@@ -77,6 +80,24 @@ public class ContactDTO implements Serializable {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public String getDisplayName() {
+		return displayName;
+	}
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+	public String getLocale() {
+		return locale;
+	}
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+	public int getGender() {
+		return gender;
+	}
+	public void setGender(int gender) {
+		this.gender = gender;
 	}
 	
 }
