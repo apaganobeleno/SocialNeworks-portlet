@@ -8,7 +8,7 @@
 		<instanceable>false</instanceable>
 		<header-portlet-css>/css/main.css</header-portlet-css>
 		<header-portlet-javascript>http://www.google.com/jsapi</header-portlet-javascript>
-		<header-portlet-javascript>/js/network-1.2/network.js</header-portlet-javascript>
+		<header-portlet-javascript>/js/network-1.5/network.js</header-portlet-javascript>
 		<footer-portlet-javascript>/js/main.js</footer-portlet-javascript>
 		<css-class-wrapper>SocialNeworks-portlet</css-class-wrapper>
 	</portlet>
