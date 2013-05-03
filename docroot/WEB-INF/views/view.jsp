@@ -29,8 +29,9 @@
       var network = null;      
       var imageDIR = "<%=request.getContextPath()%>/img/";
       var jsonContacts = '${jsonContacts}';
-      console.log(jsonContacts);
+      var jsonCurrentUser = '${jsonCurrentUser}';      
       var objContacts = JSON.parse(jsonContacts);
+      var objCurrentUser = JSON.parse(jsonCurrentUser);
       //console.log(objContacts);
       google.load('visualization', '1');
       
@@ -62,8 +63,10 @@
         packagesTable.addColumn('string', 'image');  // optional
         packagesTable.addColumn('string', 'style');  // optional
 		
-        //add the central node, it's me!        
-        nodesTable.addRow([0, 'Me', '<%=user.getPortraitURL(themeDisplay) %>', 'image']);        
+        //add the central node, it's me!
+        console.log(objCurrentUser['firstName']);
+        console.log(objCurrentUser['lastName']);
+        nodesTable.addRow([0, objCurrentUser['firstName'] + ' ' + objCurrentUser['lastName'], objCurrentUser['pictureURL'] ? objCurrentUser['pictureURL'] : '<%=user.getPortraitURL(themeDisplay) %>' , 'image']);        
 		for (var key in objContacts) {
     	   	var obj = objContacts[key];    	   	    		
 	 	   	// iterat through contacts
@@ -71,7 +74,7 @@
  	       		//console.log(prop + " = " + obj[prop]);
  	       		var data = obj[prop];
  	       		var name = '';  	       		
- 	       		if(!isBlank(data['lastName'])) {
+ 	       		if(!isBlank(data['lastName']) || !isBlank(data['firstName'])) {
  	       			name = data['firstName'] + ' ' + data['lastName']; 	       			
  	       		} else {
  	       			name = data['name']; 	       			
@@ -83,12 +86,11 @@
 				
 				//@@ check why it doesnt show the logo for only one SN
 				for(var socialnetwork in socialnetworks) {
-					var socialnetworkData = socialnetworks[socialnetwork];
-					console.log(socialnetworkData);
+					var socialnetworkData = socialnetworks[socialnetwork];					
 					for(var value in socialnetworkData) {
 						var img = '';						
 						var dataValue = socialnetworkData[value];						
-						if(dataValue == 'googleplus') {
+						if(dataValue == 'google') {
 							img = imageDIR + 'googleplus-logo.png';						
 						}
 						if(dataValue == 'linkedin') {
@@ -121,8 +123,8 @@
         
      	// specify options
         var options = {
-          'width': '600px', 
-          'height': '600px',
+          'width': '900px', 
+          'height': '700px',
           'stabilize': false,   // stabilize positions before displaying
           'nodes': {
               // default for all nodes
