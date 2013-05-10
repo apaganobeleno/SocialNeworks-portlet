@@ -46,7 +46,7 @@ import sun.util.logging.resources.logging;
 /**
  * @author V. Koshelenko
  */
-public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements SocialNetworkOAuthData<LinkedInRequestToken,LinkedInAccessToken,Person> {
+public class LinkedInConnectUtil extends SocialNetworkOAuthUtil<LinkedInRequestToken,LinkedInAccessToken,Person> /*implements SocialNetworkOAuthData<LinkedInRequestToken,LinkedInAccessToken,Person>*/ {
 	
 	public static String apiKey;
 	
@@ -319,11 +319,11 @@ public class LinkedInConnectUtil extends SocialNetworkOAuthUtil implements Socia
     	return accessToken;
     }
     
-    @Override
-    public boolean currentUserHasAccount() {
-    	LinkedInAccessToken accessToken = this.getAccessToken();
-    	return accessToken != null;
-    }
+//    @Override
+//    public boolean currentUserHasAccount() {
+//    	LinkedInAccessToken accessToken = this.getAccessToken();
+//    	return accessToken != null;
+//    }
         
     //contacts = LinkedInConnectUtil.addContacts(portletRequest, contacts);
     
