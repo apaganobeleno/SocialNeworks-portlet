@@ -72,7 +72,7 @@ import com.liferay.portal.util.PortalUtil;
 //import com.google.api.services.plus.Plus;
 //import com.google.api.services.plus.PlusScopes;
 
-public class GooglePlusConnectUtil extends SocialNetworkOAuthUtil implements SocialNetworkOAuthData<Credential, Credential, ContactEntry>{
+public class GooglePlusConnectUtil extends SocialNetworkOAuthUtil<Credential, Credential, ContactEntry> /* implements SocialNetworkOAuthData<Credential, Credential, ContactEntry>*/{
 
 	public static String apiKey;
 	
@@ -198,14 +198,7 @@ public class GooglePlusConnectUtil extends SocialNetworkOAuthUtil implements Soc
 		return contacts;
 
 	}
-	
-	
-	@Override
-	public boolean currentUserHasAccount() {
-		Credential accessToken = this.getAccessToken();
-    	return accessToken != null;
-	}
-
+		
 	@Override
 	public String getAuthorizationURL() {
 		String authorizationURL = new GoogleAuthorizationCodeRequestUrl(
@@ -225,11 +218,10 @@ public class GooglePlusConnectUtil extends SocialNetworkOAuthUtil implements Soc
 		
 		HttpServletRequest servletRequest = PortalUtil.getHttpServletRequest(this.portletRequest);
         HttpSession session = servletRequest.getSession();
-    	if(session.getAttribute("googleplusAccessToken") != null) {
-    		//(String)session.getAttribute("googlePlusAccessToken")
+    	if(session.getAttribute("googleplusAccessToken") != null) {    		
     		String accessToken = (String)session.getAttribute("googleplusAccessToken");
     		credential = new GoogleCredential().setAccessToken(accessToken);
-    		
+    		//@@ see what happens if the credential expired
 //    		try {
 //				credential.refreshToken();
 //			} catch (IOException e) {
@@ -353,49 +345,38 @@ public class GooglePlusConnectUtil extends SocialNetworkOAuthUtil implements Soc
     	// if it is not duplicated
     	if(!isDuplicated) {
     		ContactDTO contact = new ContactDTO();				
-			contact.setId(contactId);
-			System.out.println("contactId: " + contactId);
+			contact.setId(contactId);			
 			if(person.hasName()) {
 				Name name = person.getName();				
 				//System.out.println("Name: " + ToStringBuilder.reflectionToString(name));
 				if(name.hasFamilyName()) {
-					contact.setLastName(name.getFamilyName().getValue());
-					System.out.println("getFamilyName: " + name.getFamilyName().getValue());
+					contact.setLastName(name.getFamilyName().getValue());					
 				}
 				if(name.hasGivenName()) {
-					contact.setFirstName(name.getGivenName().getValue());
-					System.out.println("getGivenName: " + name.getGivenName().getValue());
+					contact.setFirstName(name.getGivenName().getValue());					
 				}									
-			} else if(person.hasShortName()){	
-				System.out.println("person.getShortName(): " + ToStringBuilder.reflectionToString(person.getShortName()));
+			} else if(person.hasShortName()){					
 				contact.setName(person.getShortName().getValue());							
-			} else if(person.hasNickname()) {
-				System.out.println("person.getNickname(): " + ToStringBuilder.reflectionToString(person.getNickname()));
+			} else if(person.hasNickname()) {				
 				contact.setName(person.getNickname().getValue());
-			} else if(person.getTitle() != null && StringUtils.isNotBlank(person.getTitle().getPlainText())) {
-				System.out.println("getTitle: " + person.getTitle().getPlainText());
+			} else if(person.getTitle() != null && StringUtils.isNotBlank(person.getTitle().getPlainText())) {				
 				contact.setName(person.getTitle().getPlainText());
-			} else if(person.getAuthors().size() > 0 && StringUtils.isNotBlank(person.getAuthors().get(0).getName())) {
-				System.out.println("getAuthors: " + person.getAuthors().get(0).getName());
+			} else if(person.getAuthors().size() > 0 && StringUtils.isNotBlank(person.getAuthors().get(0).getName())) {				
 				contact.setName(person.getAuthors().get(0).getName());
 			} else if(person.getEmailAddresses().size() > 0) {
 				Email email = person.getEmailAddresses().get(0);
-				if(StringUtils.isNotBlank(email.getDisplayName())) {
-					System.out.println("getDisplayName: " + email.getDisplayName());
+				if(StringUtils.isNotBlank(email.getDisplayName())) {					
 					contact.setName(email.getDisplayName());
-				} else if(StringUtils.isNotBlank(email.getAddress())) {
-					System.out.println("getAddress:" + email.getAddress());
+				} else if(StringUtils.isNotBlank(email.getAddress())) {					
 					contact.setName(email.getAddress());
-				} else {
-					System.out.println("not available");
+				} else {					
 					contact.setName("not available");
 				}
 			}			
 			
 			// add picture
 			String pictureURL = "";
-			Link photoLink = person.getContactPhotoLink();
-			System.out.println("photoLink: " + photoLink.getHref() + " - " + ToStringBuilder.reflectionToString(photoLink));			
+			Link photoLink = person.getContactPhotoLink();						
 			if (photoLink != null && StringUtils.isNotBlank(photoLink.getEtag())) {				 
 				try {
 					System.out.println("photoLink.getHref(): " + photoLink.getHref());
