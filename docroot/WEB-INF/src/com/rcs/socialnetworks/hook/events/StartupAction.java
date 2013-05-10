@@ -115,5 +115,19 @@ public class StartupAction extends SimpleAction {
 					ExpandoColumnConstants.LONG);
 			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
 		} catch (Exception ignored) { }
+		
+		try {					
+			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
+					expandoTable.getTableId(), "facebookAccessToken",
+					ExpandoColumnConstants.STRING);				
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
+		} catch (Exception ignored) { }
+		
+		try {					
+			ExpandoColumn expandoColumn = ExpandoColumnLocalServiceUtil.addColumn(
+					expandoTable.getTableId(), "facebookExpirationTime",
+					ExpandoColumnConstants.LONG);		
+			ResourcePermissionLocalServiceUtil.setResourcePermissions(companyId, ExpandoColumn.class.getName(), ResourceConstants.SCOPE_GROUP, String.valueOf(expandoColumn.getColumnId()), user.getRoleId(), new String[] { ActionKeys.VIEW, ActionKeys.UPDATE, ActionKeys.ACCESS });
+		} catch (Exception ignored) { }
 	}
 }
