@@ -20,6 +20,7 @@ import javax.portlet.PortletResponse;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import oauth.signpost.OAuth;
@@ -64,6 +65,7 @@ import com.liferay.portlet.expando.service.ExpandoTableLocalServiceUtil;
 import com.liferay.portlet.social.model.SocialRelationConstants;
 import com.rcs.socialnetworks.contact.ContactDTO;
 import com.rcs.socialnetworks.contact.SocialNetworkDTO;
+import com.rcs.socialnetworks.facebook.FacebookConnectUtil;
 import com.rcs.socialnetworks.google.GooglePlusConnectUtil;
 import com.rcs.socialnetworks.linkedin.LinkedInConnectUtil;
 import com.rcs.socialnetworks.twitter.TwitterConnectUtil;
@@ -140,9 +142,8 @@ public class SocialNetworksController {
 		 }
 		 
 		GooglePlusConnectUtil googlePlus = new GooglePlusConnectUtil(portletRequest);
-		if(googlePlus.isEnabled()) {
-			log.error("googlePlus.currentUserHasAccount(): " + googlePlus.currentUserHasAccount());
-        	if(googlePlus.currentUserHasAccount()) {    //@@ seguir acá!!        		
+		if(googlePlus.isEnabled()) {			
+        	if(googlePlus.currentUserHasAccount()) {        		
         		// if we finally have the google access token, then get the google connections            		    			
     			//transform connections to ContactDTO
     			contacts = googlePlus.addContacts(contacts);
@@ -151,6 +152,46 @@ public class SocialNetworksController {
                 model.put("googlePlusAuthUrl", googlePlusAuthUrl);
         	}      
 			
+		}
+		
+		FacebookConnectUtil facebook = new FacebookConnectUtil(portletRequest);
+		log.error("facebook.isEnabled(): " + facebook.isEnabled());
+		log.error("facebook.currentUserHasAccount(): " + facebook.currentUserHasAccount());
+		log.error("facebook.getAuthorizationURL(): " + facebook.getAuthorizationURL());
+		if(facebook.isEnabled()) {
+//			HttpServletRequest originalServletRequest = PortalUtil.getOriginalServletRequest(PortalUtil.getHttpServletRequest(portletRequest));
+//			String code = originalServletRequest.getParameter("code");
+//			if(StringUtils.isNotBlank(code)) {
+//				facebook.setCode(code);
+//				log.error("getAccessToken(): " + ToStringBuilder.reflectionToString(facebook.getAccessToken()));
+////				String url = facebook.getAccessTokenURL();
+////				log.error("url: " + url);
+////				HttpServletResponse servletResponse = PortalUtil.getHttpServletResponse(response);
+////				try {
+////					servletResponse.sendRedirect(url);
+////					return null;
+////				} catch (IOException e) {
+////					// TODO Auto-generated catch block
+////					e.printStackTrace();
+////				}
+//			}
+//			
+//			String access_token = originalServletRequest.getParameter("access_token");
+//			log.error("access_token: " + access_token);
+//			String expires_in = originalServletRequest.getParameter("expires_in");
+//			log.error("expires_in: " + expires_in);
+//			if(StringUtils.isNotBlank(access_token)) {
+//				
+//			}
+			if(facebook.currentUserHasAccount()) {
+				
+				// if we finally have the facebook access token, then get the facebook connections            		    			
+    			//transform connections to ContactDTO
+    			contacts = facebook.addContacts(contacts);
+			} else {
+				String facebookAuthUrl = facebook.getAuthorizationURL();
+                model.put("facebookAuthUrl", facebookAuthUrl);
+			}
 		}
 		// check if Liferay's social networking portlet is installed
 		boolean isFriendsPortletInstalled = false;
