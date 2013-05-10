@@ -34,10 +34,10 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author V. Koshelenko
  * @author Florencia Gadea
  */
-public class TwitterConnectUtil extends SocialNetworkOAuthUtil implements SocialNetworkOAuthData<RequestToken,AccessToken,User>{
+public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,AccessToken,User> /*implements SocialNetworkOAuthData<RequestToken,AccessToken,User>*/{
 	private static Log log = LogFactoryUtil.getLog(TwitterConnectUtil.class);
 	
-public static final String socialNetworkName = "linkedin";
+	public static final String socialNetworkName = "twitter";
 	
 	public static String apiKey;
 
@@ -262,11 +262,11 @@ public static final String socialNetworkName = "linkedin";
 		return null;
 	}	
 
-	@Override
-	public boolean currentUserHasAccount() {
-		AccessToken accessToken = this.getAccessToken();
-    	return accessToken != null;
-	}
+//	@Override
+//	public boolean currentUserHasAccount() {
+//		AccessToken accessToken = this.getAccessToken();
+//    	return accessToken != null;
+//	}
 
 	@Override
 	public String getAuthorizationURL() {
@@ -359,5 +359,10 @@ public static final String socialNetworkName = "linkedin";
 			this.twitterUser = getSocialNetworkCurrentUser();
 		}		
 		return this.twitterUser.getProfileImageURL().toString();
+	}
+	
+	@Override
+	public String getSocialNetworkName() {		
+		return socialNetworkName;
 	}
 }
