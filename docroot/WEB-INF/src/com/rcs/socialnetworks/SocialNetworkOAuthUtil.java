@@ -22,7 +22,7 @@ import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.PortletURLFactoryUtil;
 import com.rcs.socialnetworks.contact.ContactDTO;
 
-public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData */{		
+public abstract class SocialNetworkOAuthUtil<RequestToken,AccessToken,Contact> implements SocialNetworkOAuthData<RequestToken,AccessToken,Contact> {		
 			
 	public static String apiKey;
 	
@@ -39,7 +39,8 @@ public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData
 	public static final String socialNetworkAccessTokenField = "socialNetworkAccessTokenField";//@@ check this later
 	
 	public static final String socialNetworkTokenSecretField = "socialNetworkTokenSecretField";
-		
+	
+	private AccessToken accessToken;
 	//@@ add expiration field?
 	
 	private User user;	
@@ -104,22 +105,11 @@ public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData
 	
 	public String geRedirectURL() {
 		if(this.redirectURL == null) {
-			this.redirectURL = this.createRedirectURL();
-			/*
-			ThemeDisplay themeDisplay= (ThemeDisplay) request.getAttribute(WebKeys.THEME_DISPLAY);
-	    	PortletDisplay portletDisplay= themeDisplay.getPortletDisplay();
-	    	System.out.println("portletid: " + portletDisplay.getId());
-	    	System.out.println("getPortletName: " + portletDisplay.getPortletName());
-	    	System.out.println("getNamespace: " + portletDisplay.getNamespace());
-	    	 = re*/
+			this.redirectURL = this.createRedirectURL();			
 		}
 		return this.redirectURL;		
 	}
 
-/*	public static String geRedirectURL(PortletRequest portletRequest) {
-		String redirectURL = SocialNetworkOAuthUtil.createRedirectURL(portletRequest);
-		
-	}*/
 	public User getUser() {
 		if(this.user == null && this.portletRequest != null) {
 			try {
@@ -169,21 +159,19 @@ public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData
 		return field;
 	}
 	
-	public void setExpandoField(String fieldName, Object field) {		
+	public void setExpandoField(String fieldName, String field) {		
 		if(this.getUser() != null) {
-			try {
-				if(field instanceof String)
-					this.getUser().getExpandoBridge().setAttribute(fieldName, (String) field);
-				
-				if(field instanceof Long)
-					this.getUser().getExpandoBridge().setAttribute(fieldName, (Long) field);
-				//User user = PortalUtil.getUser(servletRequest);
-				//User user = this.getUser();
-				//getExpandoAccessToken
-				//getExpandoTokenSecret
-										    
-			} catch (Exception ignored) {				
-			}
+			try {				
+				this.getUser().getExpandoBridge().setAttribute(fieldName, field);																		  
+			} catch (Exception ignored) { }
+		}		
+	}
+	
+	public void setExpandoField(String fieldName, Long field) {		
+		if(this.getUser() != null) {
+			try {				
+				this.getUser().getExpandoBridge().setAttribute(fieldName, field);																		  
+			} catch (Exception ignored) { }
 		}		
 	}
 	
@@ -210,11 +198,14 @@ public abstract class SocialNetworkOAuthUtil /*implements SocialNetworkOAuthData
 	public void storeAccessToken(String accessToken, String tokenSecret) {
 		setExpandoField(getAccessTokenFieldName(), accessToken);
 		setExpandoField(getTokenSecrtFieldName(), tokenSecret);
-//		if(this.getUser() != null) {
-//			this.getUser().getExpandoBridge().setAttribute("linkedinAccessToken", accessToken);
-//			user.getExpandoBridge().setAttribute("linkedinTokenSecret", tokenSecret);
-////  		user.getExpandoBridge().setAttribute("linkedinExpirationTime", linkedinAccessToken.getExpirationTime().getTime());
-//		}
+	}	
+	
+	public boolean currentUserHasAccount() {
+		AccessToken accessToken = this.getAccessToken();
+		return accessToken != null;
 	}
-	//public String getUserAccessToken
+	
+	public void setAccessToken(AccessToken accessToken) {
+		this.accessToken = accessToken;
+	}
 }
