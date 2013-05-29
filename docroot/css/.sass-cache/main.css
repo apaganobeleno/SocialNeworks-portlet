@@ -1,1 +1,27 @@
+img {
+  max-width: 64px;
+  height: auto; }
+
+#login_navigation {
+  display: block;
+  overflow: hidden;
+  clear: both;
+  width: 100%; }
+
+#login_navigation ul {
+  list-style-type: none; }
+
+#login_navigation ul li {
+  margin: 10px;
+  padding: 10px;
+  display: inline; }
+
+#login_navigation ul li a {
+  font-size: 10pt;
+  text-decoration: none;
+  color: #8fadd9; }
+
+#login_navigation ul li a:hover {
+  font-size: 10pt;
+  color: #495970; }
 

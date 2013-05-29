@@ -4,6 +4,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The DTO used to represent a contact 
+ * from any social network
+ * 
+ * @author flor
+ *
+ */
 public class ContactDTO implements Serializable {
 	
 	private long id;
@@ -12,13 +19,27 @@ public class ContactDTO implements Serializable {
 	private String lastName;
 	private String name;
 	private String displayName;
+	private String screenName;
 	private String email;
 	private String locale;
-	private String pictureURL;	
-	private int pictureHeight; //@@ set default value?
-	private int pictureWidth;
-	private int gender;
+	private String pictureURL;
+	private String contactURL;
 	
+	public enum Gender {
+		UNDEFINED(0), MALE(1), FEMALE(2);
+        public int value;
+
+        private Gender(int value) {
+                this.value = value;
+        }
+	};  
+
+	private int gender = Gender.UNDEFINED.value;
+	
+	/**
+	 * This List carries the information of the 
+	 * social networks the contacts belongs to
+	 */
 	private List <SocialNetworkDTO> socialNetworks = new ArrayList<SocialNetworkDTO>();
 	
 	public long getId() {
@@ -56,19 +77,7 @@ public class ContactDTO implements Serializable {
 	}
 	public void setSocialNetworks(List <SocialNetworkDTO> socialNetworks) {
 		this.socialNetworks = socialNetworks;
-	}
-	public int getPictureHeight() {
-		return pictureHeight;
-	}
-	public void setPictureHeight(int pictureHeight) {
-		this.pictureHeight = pictureHeight;
-	}
-	public int getPictureWidth() {
-		return pictureWidth;
-	}
-	public void setPictureWidth(int pictureWidth) {
-		this.pictureWidth = pictureWidth;
-	}
+	}	
 	public String getEmail() {
 		return email;
 	}
@@ -98,6 +107,18 @@ public class ContactDTO implements Serializable {
 	}
 	public void setGender(int gender) {
 		this.gender = gender;
+	}
+	public String getScreenName() {
+		return screenName;
+	}
+	public void setScreenName(String screenName) {
+		this.screenName = screenName;
+	}
+	public String getContactURL() {
+		return contactURL;
+	}
+	public void setContactURL(String contactURL) {
+		this.contactURL = contactURL;
 	}
 	
 }

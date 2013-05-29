@@ -3,15 +3,12 @@ package com.rcs.socialnetworks.twitter;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.util.PortalUtil;
-import com.rcs.socialnetworks.SocialNetworkOAuthData;
-import com.rcs.socialnetworks.SocialNetworkOAuthUtil;
-import com.rcs.socialnetworks.contact.ContactDTO;
-import com.rcs.socialnetworks.contact.SocialNetworkDTO;
+import javax.portlet.PortletRequest;
+import javax.servlet.http.HttpServletRequest;
+
+import oauth.signpost.OAuth;
+
+import org.apache.commons.lang.StringUtils;
 
 import twitter4j.IDs;
 import twitter4j.Twitter;
@@ -21,41 +18,50 @@ import twitter4j.User;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
-import javax.portlet.PortletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import oauth.signpost.OAuth;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.util.PortalUtil;
+import com.rcs.socialnetworks.OAuth10Interface;
+import com.rcs.socialnetworks.SocialNetworkOAuth;
+import com.rcs.socialnetworks.contact.ContactDTO;
+import com.rcs.socialnetworks.contact.SocialNetworkDTO;
 
 /**
- * @author V. Koshelenko
+ * This is the class that handles the Twitter OAuth 1.0a 
+ * connection to access the user protected resources in Twitter
+ * 
  * @author Florencia Gadea
  */
-public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,AccessToken,User> /*implements SocialNetworkOAuthData<RequestToken,AccessToken,User>*/{
+public class TwitterConnectUtil extends SocialNetworkOAuth<AccessToken,User> implements OAuth10Interface<RequestToken,AccessToken>{
 	private static Log log = LogFactoryUtil.getLog(TwitterConnectUtil.class);
-	
-	public static final String socialNetworkName = "twitter";
-	
-	public static String apiKey;
+		
+	public static final String SOCIAL_NETWORK_NAME = "twitter";		
 
-	public static String apiSecret;
-
-	public static final String socialNetworkAccessTokenField = "twitterAccessToken";
+	/**
+	 * The name of the field where the access token will 
+	 * be stored in the user expando bridge field
+	 */
+	public static final String ACCESS_TOKEN_FIELD = "twitterAccessToken";
 	
-	public static final String socialNetworkTokenSecretField = "twitterTokenSecret";
+	/**
+	 * The name of the field where the token secret 
+	 * will be stored in the user expando bridge field
+	 */
+	public static final String TOKEN_SECRET_FIELD = "twitterTokenSecret";
+		
+	public static final String REQUEST_TOKEN_FIELD = "twitterRequestToken";	    
+    
+	/**
+	 * The auth parameter for the oauth URL
+	 */
+	public static final String AUTH_URL_PARAM = "twitterAuthURL";
 	
-	public static final String socialNetworkRequestTokenField = "twitterRequestToken";
-	
-    private TwitterConnect twitterConnect;
     private User twitterUser;
+    
+    private RequestToken requestToken;
+    
     private AccessToken accessToken;
-    
-    private String redirectURL; //@@ usar la del padre?
-    //private Twitter twitter;
-    
+       
     public TwitterConnectUtil(PortletRequest request) {
     	super(request);    	
     }
@@ -65,7 +71,7 @@ public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,Acce
     }
     
     public Twitter getTwitter() {
-        Twitter twitter = new TwitterFactory().getInstance();
+        Twitter twitter = new TwitterFactory().getInstance();        
         twitter.setOAuthConsumer(
                 getApiKey(),
                 getApiSecret()
@@ -77,51 +83,19 @@ public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,Acce
 	public RequestToken getRequestToken(String redirectURL) {
     	RequestToken requestToken = null;    	     	    	    	    
 		try {				    				
-			requestToken = getTwitter().getOAuthRequestToken(redirectURL);		
-		} catch (Exception e) { //@@ check better way
-			// TODO Auto-generated catch block
+			requestToken = getTwitter().getOAuthRequestToken(redirectURL);			
+		} catch (Exception e) {
+			// TODO @@ Return a proper error message to user
 			e.printStackTrace();
 		};    	
         return requestToken;
 	}
     
     @Override
-    public RequestToken getRequestToken() {
-    	RequestToken requestToken = null;
-    	if(this.redirectURL == null) {
-    		this.redirectURL = this.createRedirectURL();
-    	}   
-    	requestToken = this.getRequestToken(this.redirectURL);
-    	HttpServletRequest servletRequest = PortalUtil.getHttpServletRequest(this.portletRequest);
-        HttpSession session = servletRequest.getSession();
-        session.setAttribute(getRequestTokenName(), requestToken);
-    	return requestToken;
-    }
-    /*
-    public static RequestToken getRequestToken() {
-    	
-    	String twitterRedirectURL = TwitterConnectUtil.getRedirectURL(portletRequest);
-
-        twitterRedirectURL = HttpUtil.addParameter(twitterRedirectURL, "p_p_id", "LOGIN_PORTLET_WAR_loginportlet");
-        twitterRedirectURL = HttpUtil.addParameter(twitterRedirectURL, "p_p_state", "normal");
-        twitterRedirectURL = HttpUtil.addParameter(twitterRedirectURL, "p_p_mode", "view");
-        twitterRedirectURL = HttpUtil.addParameter(twitterRedirectURL, "socialnetwork", "twitter");
-        
-        String twitterStrutsActionParameter = "_LOGIN_PORTLET_WAR_loginportlet_action";
-        String twitterStrutsActionValue = "twitter";
-
-        twitterRedirectURL = HttpUtil.addParameter(twitterRedirectURL, twitterStrutsActionParameter, twitterStrutsActionValue);
-
-        //Twitter twitter = TwitterConnectUtil.getTwitter(portletRequest);
-        return getTwitter().getOAuthRequestToken(twitterRedirectURL);
-    }*/
-    //@@ sacar
-    public RequestToken getTwitterRequestToken(String url) throws SystemException, TwitterException {
-        return getTwitter().getOAuthRequestToken(url);
-    }
-  //@@ sacar
-    public static RequestToken getTwitterRequestToken(Twitter twitter, String url) throws SystemException, TwitterException {
-        return twitter.getOAuthRequestToken(url);
+    public RequestToken getRequestToken() {    	
+    	RequestToken requestToken = this.getRequestToken(this.getRedirectURL());
+    	this.requestToken = requestToken;    	
+    	return this.requestToken;
     }
    
     public void setTwitterUser(User user){
@@ -131,62 +105,35 @@ public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,Acce
     public User getTwitterUser() {
         return this.twitterUser;
     }
-
-    private TwitterConnect getTwitterConnect(){
-        if (this.twitterConnect == null) {
-            //this.twitterConnect = new TwitterConnectImpl(); //@@change this 
-        }
-        return this.twitterConnect;
-    }        
+          
     @Override
     public AccessToken getAccessToken() {
     	if(this.accessToken != null)
     		return this.accessToken;
     	
     	AccessToken accessToken = null;
-    	// check if the access token is in the session
-    	HttpServletRequest servletRequest = PortalUtil.getHttpServletRequest(this.portletRequest);
-        HttpSession session = servletRequest.getSession();
-    	if(session.getAttribute(getAccessTokenFieldName()) != null) {
-    		accessToken = (AccessToken) session.getAttribute(getAccessTokenFieldName()); //@@ hasta aca
-    		this.setAccessToken(accessToken);
-    		return accessToken;
-    	}
     	
+    	if(this.accessToken != null) {
+    		return this.accessToken;
+    	}
+    	    	
     	// check if the access token is stored
-    	String expandoAccessToken = getExpandoAccessToken();    		
-		//String accessTokenStr = (String) user.getExpandoBridge().getAttribute("twitterAccessToken");
-    	//Long expirationTime = (Long) user.getExpandoBridge().getAttribute("twitterExpirationTime");
-    	if(StringUtils.isNotBlank(expandoAccessToken)) {	    		
-			//String tokenSecretStr = (String)user.getExpandoBridge().getAttribute("twitterTokenSecret");        		
-			accessToken = new AccessToken(expandoAccessToken, getExpandoTokenSecret());
+    	String expandoAccessToken = getExpandoStringField(ACCESS_TOKEN_FIELD);
+    	if(StringUtils.isNotBlank(expandoAccessToken)) {	    		       		
+			accessToken = new AccessToken(expandoAccessToken, getExpandoStringField(TOKEN_SECRET_FIELD));
 			this.setAccessToken(accessToken);
     		return accessToken;	    		    	        	
     	}		
 
-    	HttpServletRequest originalServletRequest = PortalUtil.getOriginalServletRequest(PortalUtil.getHttpServletRequest(this.portletRequest));
-    	if(isSocialNetworkOAuthRequest(originalServletRequest)) {
-    		String oauthVerifier = originalServletRequest.getParameter(OAuth.OAUTH_VERIFIER);	        
-	        RequestToken requestToken = (RequestToken) session.getAttribute(getRequestTokenName());
-	        //LinkedInOAuthService oAuthService = this.getLinkedInOAuthService();
-	        //linkedinAccessToken = oAuthService.getOAuthAccessToken(requestToken, oauthVerifier);
+    	HttpServletRequest originalServletRequest = PortalUtil.getOriginalServletRequest(PortalUtil.getHttpServletRequest(this.portletRequest));    	
+    	if(isSocialNetworkOAuthRequest(originalServletRequest) && this.requestToken != null) {
+    		String oauthVerifier = originalServletRequest.getParameter(OAuth.OAUTH_VERIFIER);
 	        accessToken = this.getAccessToken(requestToken, oauthVerifier);
 	        this.storeAccessToken(accessToken);	       
-    	}
-		    	    	
+    	}		    	    	
     	return accessToken;
     }
-    
-//    public static boolean currentUserHasTwitterAccount(PortletRequest portletRequest) throws SystemException {
-//    	AccessToken accessToken = TwitterConnectUtil.getTwitterAccessToken();
-//    	return accessToken != null;
-//    }    	    	    
-
-    //@@override a futuro
-	public void setAccessToken(AccessToken accessToken) {
-		this.accessToken = accessToken;
-	}
-	
+    	
 	@Override
 	public List<ContactDTO> addContacts(List<ContactDTO> contacts) {
 		AccessToken accessToken = this.getAccessToken();		
@@ -197,7 +144,7 @@ public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,Acce
 		try {
 			friendIds = twitter.getFriendsIDs(-1);															    
 		} catch(TwitterException e) {
-			//@@@ log here
+			//TODO @@Return proper error message
 			log.error("TwitterException: ", e);
 		}
 		
@@ -208,11 +155,12 @@ public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,Acce
 				try {					
 					friend = twitter.showUser(id);
 					contacts = this.addContactAndCheckDuplicated(contacts, friend);					
-					if(i > 10)
-						break;//@@ remove this
+					int maxContactsShown = this.getMaxContactsShown();
+					if(i > maxContactsShown)
+						break;
 					i++;
-				} catch (Exception ex) {
-					//@@ignore?
+				} catch (Exception ignored) {
+					//TODO @@Show proper error message to user
 				}												
 			}			
 		}
@@ -220,65 +168,10 @@ public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,Acce
 	}
 	
 	@Override
-	public List<ContactDTO> addContactAndCheckDuplicated(List<ContactDTO> contacts, User friend) {
-		long contactId = 1;
-    	boolean isDuplicated = false;
-    	if(!contacts.isEmpty()) {
-    		ContactDTO lastContact = contacts.get(contacts.size()-1);
-    		contactId = lastContact.getId() + 1;
-    		// check if contact is duplicated
-    		for(ContactDTO contact : contacts) {
-        		//if(StringUtils.equalsIgnoreCase(contact.getLastName(), person.getLastName()) && StringUtils.equalsIgnoreCase(contact.getFirstName(), person.getFirstName())) {
-    			if(StringUtils.equalsIgnoreCase(contact.getFirstName() + " " + contact.getLastName(), friend.getName())) {
-        			List<SocialNetworkDTO> socialNetworks = contact.getSocialNetworks();
-        			socialNetworks.add(new SocialNetworkDTO("twitter")); //@@ add constant
-        			contact.setSocialNetworks(socialNetworks);
-        			isDuplicated = true;
-        		}
-        	}
-    	}    	    	    	
-    	// if it is not duplicated
-    	if(!isDuplicated) {
-    		ContactDTO contact = new ContactDTO();				
-			contact.setId(contactId);
-			//contact.setFirstName(person.getFirstName());			
-			contact.setName(friend.getName());
-			//contact.setLastName(person.getLastName());
-			String pictureURL = StringUtils.isNotBlank(friend.getProfileImageURL().toString()) ? friend.getProfileImageURL().toString() : "http://s.c.lnkd.licdn.com/scds/common/u/images/themes/katy/ghosts/person/ghost_person_200x200_v1.png"; //@@ change this, add constant
-			contact.setPictureURL(pictureURL);			
-			List<SocialNetworkDTO> socialNetworks = new ArrayList<SocialNetworkDTO>();
-			socialNetworks.add(new SocialNetworkDTO("twitter"));
-			contact.setSocialNetworks(socialNetworks);
-			contacts.add(contact);			
-			contactId++;    				
-    	}
-    	return contacts;
-	}
-
-	@Override
-	public List<ContactDTO> addContacts(PortletRequest portletRequest,
-			List<ContactDTO> contacts) {
-		// TODO Auto-generated method stub
-		return null;
-	}	
-
-//	@Override
-//	public boolean currentUserHasAccount() {
-//		AccessToken accessToken = this.getAccessToken();
-//    	return accessToken != null;
-//	}
-
-	@Override
 	public String getAuthorizationURL() {
 		RequestToken requestToken = this.getRequestToken();
     	return requestToken.getAuthenticationURL();
 	}
-
-//	@Override
-//	public AccessToken getAccessToken() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
 
 	@Override
 	public AccessToken getAccessToken(RequestToken requestToken,
@@ -288,69 +181,32 @@ public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,Acce
 			Twitter twitter = this.getTwitter();
 			accessToken = twitter.getOAuthAccessToken(requestToken, oAuthVerifier);
 		} catch (TwitterException e) {
-			// TODO Auto-generated catch block
+			// TODO @@Show proper error message to user
 			e.printStackTrace();
 		}		
 		return accessToken;
 	}	
-	
-	@Override
-	public String getAccessTokenFieldName() {
-		return socialNetworkAccessTokenField;
-	}
-	
-	@Override
-	public String getTokenSecrtFieldName() {
-		return socialNetworkTokenSecretField;
-	}
-	
-	@Override
-	public String getRequestTokenName() {
-		return socialNetworkRequestTokenField;
-	}
-	
-	@Override
-	public String getApiKey() {    	
-		if(apiKey == null) { //@@ hacerlo de manera más automática
-    		apiKey = PropsUtil.get("twitter.default.connect.app.id");
-    	}
-    	return apiKey;		
-	}	
-
-    @Override
-	public String getApiSecret() {    	
-    	if(apiSecret == null) {
-    		apiSecret = PropsUtil.get("twitter.default.connect.app.secret");
-    	}
-    	return apiSecret;
-	}
-    
+	    
 	@Override
 	public void storeAccessToken(AccessToken accessToken) {
-		this.storeAccessToken(accessToken.getToken(), accessToken.getTokenSecret());
-		//store expiration time
+		setExpandoField(ACCESS_TOKEN_FIELD, accessToken.getToken());
+		setExpandoField(TOKEN_SECRET_FIELD, accessToken.getTokenSecret());				
 	}
-
-	@Override
-    public boolean isEnabled() { //@@change later
-        return true;
-    }
 
 	@Override
 	public User getSocialNetworkCurrentUser() {
-		if(this.twitterUser != null) {
-			return twitterUser;
-		} else {
+		if(this.getSocialNetworkUser() == null) { 			
 			AccessToken accessToken = this.getAccessToken();		
 			Twitter twitter = this.getTwitter();
 			twitter.setOAuthAccessToken(accessToken);
 			try {
 				User user = twitter.showUser(twitter.getScreenName());
-				this.twitterUser = user;
-			} catch (IllegalStateException ignored) {  
-			} catch (TwitterException ignored) { }			
-			return this.twitterUser;
-		}		
+				this.setSocialNetworkUser(user);
+			} catch (IllegalStateException ignored) { // TODO @@ Show proper error message 
+			} catch (TwitterException ignored) { // TODO @@ Show proper error message 
+			}									
+		}
+		return getSocialNetworkUser();
 	}
 
 	@Override
@@ -363,6 +219,42 @@ public class TwitterConnectUtil extends SocialNetworkOAuthUtil<RequestToken,Acce
 	
 	@Override
 	public String getSocialNetworkName() {		
-		return socialNetworkName;
+		return SOCIAL_NETWORK_NAME;
+	}
+
+	@Override
+	public ContactDTO createContactDTO(User friend) {
+		ContactDTO contact = new ContactDTO();								
+		contact.setName(friend.getName());
+		contact.setDisplayName(friend.getName());
+		contact.setScreenName(friend.getScreenName());		
+		String pictureURL = StringUtils.isNotBlank(friend.getProfileImageURL().toString()) ? friend.getProfileImageURL().toString() : this.getDefaultPictureURL();
+		contact.setPictureURL(pictureURL);			
+		List<SocialNetworkDTO> socialNetworks = new ArrayList<SocialNetworkDTO>();
+		socialNetworks.add(this.SOCIAL_NETWORK_DTO);
+		contact.setSocialNetworks(socialNetworks);
+		return contact;
+	}
+
+	@Override
+	public boolean isDuplicatedContact(ContactDTO contact, User friend) {
+		if(!contact.getSocialNetworks().contains(this.SOCIAL_NETWORK_DTO)) {
+			if(StringUtils.equalsIgnoreCase(contact.getDisplayName(), friend.getName())) {
+				return true;
+			}
+			if(StringUtils.isNotBlank(contact.getScreenName()) && StringUtils.equalsIgnoreCase(contact.getScreenName(), friend.getScreenName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void setRequestToken(RequestToken requestToken) {
+		this.requestToken = requestToken;
+	}
+	
+	@Override
+	public String[] getSocialNetworkExpandoFields() {
+		return new String[] {ACCESS_TOKEN_FIELD, TOKEN_SECRET_FIELD};		
 	}
 }

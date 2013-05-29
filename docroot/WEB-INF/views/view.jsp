@@ -13,7 +13,7 @@
  * details.
  */
 %>
-<%@page contentType="text/html" pageEncoding="UTF-8" %>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="portlet" uri="http://java.sun.com/portlet" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jstl/fmt" %>
@@ -21,7 +21,7 @@
 <%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 <liferay-theme:defineObjects /> 
 <portlet:defineObjects />
-
+<portlet:resourceURL var="revokeSocialNetworkURL" id="revokeSocialNetwork" />
 <script type="text/javascript">
       var nodesTable = null;
       var linksTable = null;
@@ -32,7 +32,7 @@
       var jsonCurrentUser = '${jsonCurrentUser}';      
       var objContacts = JSON.parse(jsonContacts);
       var objCurrentUser = JSON.parse(jsonCurrentUser);
-      //console.log(objContacts);
+      
       google.load('visualization', '1');
       
       // Set callback to run when API is loaded
@@ -63,35 +63,29 @@
         packagesTable.addColumn('string', 'image');  // optional
         packagesTable.addColumn('string', 'style');  // optional
 		
-        //add the central node, it's me!
-        console.log(objCurrentUser['firstName']);
-        console.log(objCurrentUser['lastName']);
+        //add the central node, it's me!        
         nodesTable.addRow([0, objCurrentUser['firstName'] + ' ' + objCurrentUser['lastName'], objCurrentUser['pictureURL'] ? objCurrentUser['pictureURL'] : '<%=user.getPortraitURL(themeDisplay) %>' , 'image']);        
 		for (var key in objContacts) {
     	   	var obj = objContacts[key];    	   	    		
-	 	   	// iterat through contacts
-	 	   	for (var prop in obj) {	 		   	
- 	       		//console.log(prop + " = " + obj[prop]);
+	 	   	// iterate through contacts
+	 	   	for (var prop in obj) {	 		   	 	       		
  	       		var data = obj[prop];
  	       		var name = '';  	       		
- 	       		if(!isBlank(data['lastName']) || !isBlank(data['firstName'])) {
- 	       			name = data['firstName'] + ' ' + data['lastName']; 	       			
- 	       		} else {
- 	       			name = data['name']; 	       			
- 	       		} 	       		
+ 	       		if(!isBlank(data['displayName'])) {
+ 	       			name = data['displayName']; 	       			
+ 	       		}        		
 				nodesTable.addRow([data['id'], name, data['pictureURL'], 'image']);
 				linksTable.addRow([0, data['id']]);								
 				var socialnetworks = data['socialNetworks'];
 				var distance = 0.3;
-				
-				//@@ check why it doesnt show the logo for only one SN
+								
 				for(var socialnetwork in socialnetworks) {
 					var socialnetworkData = socialnetworks[socialnetwork];					
 					for(var value in socialnetworkData) {
 						var img = '';						
 						var dataValue = socialnetworkData[value];						
 						if(dataValue == 'google') {
-							img = imageDIR + 'googleplus-logo.png';						
+							img = imageDIR + 'google-logo.png';						
 						}
 						if(dataValue == 'linkedin') {
 							img = imageDIR + 'linkedin-logo.jpg';
@@ -115,24 +109,14 @@
 	 	   	}
     	}
         
-        //nodesTable.addRow([2]);
-        //nodesTable.addRow([3]);
-        
-        //linksTable.addRow([1, 2]);
-        //linksTable.addRow([3, 2]);
-        
      	// specify options
         var options = {
           'width': '900px', 
           'height': '700px',
           'stabilize': false,   // stabilize positions before displaying
           'nodes': {
-              // default for all nodes
-        	  //'widthMax': 10 //probar con width solo
-        	  //,'widthMin':5
+              // default for all nodes        	  
         	  'radius': 50
-        	  //,'radiusMin': 2
-              //,'radiusMax': 7
         	  ,'distance': 200
         	  ,'style': 'image'
             }
@@ -146,8 +130,27 @@
 
       }
       
+      jQuery(document).ready(function(){
+    	  <%--//Configuration Form Button Listener --%>
+          jQuery(".socialnetwork").click(function() {
+        	  jQuery("#socialnetwork-portlet").mask('Loading...');
+              console.log("click");
+        	  var socialnetworkName = jQuery(this).attr('id');                         	              
+              jQuery.ajax({
+                  url : '${revokeSocialNetworkURL}'
+                      ,type : 'POST'
+                   	  ,data: { 
+                   	        'socialNetworkName': socialnetworkName               	        
+                   	  }
+                      ,success : function(data) { location.reload(); }
+                  });
+              
+          });
+      });
+      
+      
 </script>
-This is the <b>SocialNeworks</b> portlet.
-
-<jsp:include page="navigation.jsp" />
-<div id="mynetwork"></div>
+<div id="socialnetwork-portlet">
+	<jsp:include page="navigation.jsp" />
+	<div id="mynetwork"></div>
+</div>

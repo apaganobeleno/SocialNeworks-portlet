@@ -4,6 +4,12 @@
         "http://www.liferay.com/dtd/liferay-hook_6_1_0.dtd">
 
 <hook>
-    <portal-properties>portal-ext.properties</portal-properties>
-    
+    <portal-properties>portal.properties</portal-properties>
+    <language-properties>content/Language.properties</language-properties>
+    <language-properties>content/Language.en.properties</language-properties>
+    <custom-jsp-dir>/WEB-INF/views</custom-jsp-dir>
+	<struts-action>
+		<struts-action-path>/portal/oauthcallback</struts-action-path>
+		<struts-action-impl>com.rcs.socialnetworks.graph.OAuthStrutsAction</struts-action-impl>
+	</struts-action>
 </hook>
