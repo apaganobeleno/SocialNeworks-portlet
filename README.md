@@ -18,3 +18,10 @@ Installation and configuration:
 7) After deploying the portlet, you need to restart the server. The new expando fields for the user table will be created. You'll have to set manually the user view and update permissions of these fields. Go to the Control Panel, Custom Fields (under Portal), click on User resource, and then you'll see all the fields just created. Click on Actions -> Permissions, and set the Update and View for role User.
 
 8) Now you can put the portlet in any page you want and test. Click on the desired social network link and see what happens!
+
+MORE INFO:
+
+To register you app in Twitter, go to: https://dev.twitter.com/apps/new
+To register you app in LinkedIn, go to: https://developers.facebook.com/apps
+To register you app in Google, go to: https://code.google.com/apis/console/
+To register you app in Facebook, go to: https://developers.facebook.com/apps
