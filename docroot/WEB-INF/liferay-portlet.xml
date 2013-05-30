@@ -8,7 +8,10 @@
 		<instanceable>false</instanceable>
 		<header-portlet-css>/css/main.css</header-portlet-css>
 		<header-portlet-css>/js/jquery-loadmask/jquery.loadmask.css</header-portlet-css>
+		<header-portlet-css>/js/bootstrap/css/bootstrap.css</header-portlet-css>
+        <header-portlet-css>/js/bootstrap/css/bootstrap-responsive.css</header-portlet-css>
 		<header-portlet-javascript>http://www.google.com/jsapi</header-portlet-javascript>
+		<header-portlet-javascript>/js/bootstrap/js/bootstrap.js</header-portlet-javascript>
 		<header-portlet-javascript>/js/network-1.5/network.js</header-portlet-javascript>
 		<header-portlet-javascript>/js/jquery.min.js</header-portlet-javascript>
 		<header-portlet-javascript>/js/jquery-loadmask/jquery.loadmask.js</header-portlet-javascript>

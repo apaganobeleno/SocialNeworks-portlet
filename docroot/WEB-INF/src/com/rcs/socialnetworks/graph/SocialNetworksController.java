@@ -20,6 +20,7 @@ import org.springframework.web.portlet.ModelAndView;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 import org.springframework.web.portlet.bind.annotation.ResourceMapping;
 
+import com.google.code.linkedinapi.client.LinkedInApiClientException;
 import com.google.gson.Gson;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -61,6 +62,7 @@ public class SocialNetworksController {
 		HttpServletRequest request = PortalUtil.getHttpServletRequest(portletRequest);
         HttpSession session = request.getSession();        
         ThemeDisplay themeDisplay= (ThemeDisplay) request.getAttribute(WebKeys.THEME_DISPLAY);
+        String errorMessage = "";
 		// check if user is logged in
 		User user = PortalUtil.getUser(request);		
 		if(user == null) {
@@ -78,30 +80,41 @@ public class SocialNetworksController {
 			currentUser.setPictureURL(user.getPortraitURL(themeDisplay));
 		}
 		List<ContactDTO> contacts = new ArrayList<ContactDTO>();
-				
-		LinkedInConnectUtil linkedin;
-		if(session.getAttribute(LinkedInConnectUtil.SOCIAL_NETWORK_NAME) != null) {
-			linkedin = (LinkedInConnectUtil) session.getAttribute(LinkedInConnectUtil.SOCIAL_NETWORK_NAME);
-			linkedin.setPortletRequest(portletRequest);
-		} else {
-			linkedin = new LinkedInConnectUtil(portletRequest);
-		}
-		// Check if linkedin is enabled, and the api key and secret added							
-        if (linkedin.isEnabled()) {        	  	
-        	if(linkedin.currentUserHasAccount()) {        		
-        		// if we finally have the linkedin access token, then get the linkedin connections            		    			
-    			//transform connections to ContactDTO
-    			contacts = linkedin.addContacts(contacts);    			
-    			if(StringUtils.isBlank(currentUser.getPictureURL())) {
-    				currentUser.setPictureURL(linkedin.getPictureURLFromSocialNetworkCurrentUser());
-    			}
-        	} else {
-        		String linkedInAuthUrl = linkedin.getAuthorizationURL();
-                model.put("linkedInAuthUrl", linkedInAuthUrl);
-        	}        	        	        	
-        }
-        session.setAttribute(LinkedInConnectUtil.SOCIAL_NETWORK_NAME, linkedin);
 		
+		try {
+			LinkedInConnectUtil linkedin;
+			if(session.getAttribute(LinkedInConnectUtil.SOCIAL_NETWORK_NAME) != null) {
+				linkedin = (LinkedInConnectUtil) session.getAttribute(LinkedInConnectUtil.SOCIAL_NETWORK_NAME);
+				linkedin.setPortletRequest(portletRequest);
+			} else {
+				linkedin = new LinkedInConnectUtil(portletRequest);
+			}
+			// Check if linkedin is enabled, and the api key and secret added							
+	        if (linkedin.isEnabled()) {        	  	
+	        	if(linkedin.currentUserHasAccount()) {        		
+	        		// if we finally have the linkedin access token, then get the linkedin connections            		    			
+	    			//transform connections to ContactDTO
+	    			contacts = linkedin.addContacts(contacts);    			
+	    			if(StringUtils.isBlank(currentUser.getPictureURL())) {
+	    				currentUser.setPictureURL(linkedin.getPictureURLFromSocialNetworkCurrentUser());
+	    			}
+	        	} else {
+	        		String linkedInAuthUrl = linkedin.getAuthorizationURL();
+	                model.put("linkedInAuthUrl", linkedInAuthUrl);
+	        	}        	        	        	
+	        }
+	        session.setAttribute(LinkedInConnectUtil.SOCIAL_NETWORK_NAME, linkedin);
+		} catch(LinkedInApiClientException e) {
+			log.error("The LinkedIn API key or secret are wrong.");
+			errorMessage = errorMessage.concat("LinkedIn Error: Wrong Api Key or secret.");
+			log.error(errorMessage);
+			model.put("errorMessage", errorMessage);
+		} catch(Exception e) {			
+			errorMessage = errorMessage.concat("LinkedIn Error: Wrong Api Key or secret.");
+			log.error(errorMessage);
+			model.put("errorMessage", errorMessage);
+		}
+        
 		TwitterConnectUtil twitter;
 		if(session.getAttribute(TwitterConnectUtil.SOCIAL_NETWORK_NAME) != null) {
 			twitter = (TwitterConnectUtil) session.getAttribute(TwitterConnectUtil.SOCIAL_NETWORK_NAME);
@@ -118,8 +131,14 @@ public class SocialNetworksController {
 	    				currentUser.setPictureURL(twitter.getPictureURLFromSocialNetworkCurrentUser());
 	    			}
 	        	} else {
-	        		String twitterAuthUrl = twitter.getAuthorizationURL(); //@@ add this in the class	        		
-	                model.put("twitterAuthUrl", twitterAuthUrl);
+	        		try {
+	        			String twitterAuthUrl = twitter.getAuthorizationURL(); //@@ add this in the class	        		
+	        			model.put("twitterAuthUrl", twitterAuthUrl);
+	        		} catch(Exception e) {	        			
+	        			errorMessage = errorMessage.concat("<br/>Twitter Error: Wrong Api Key or secret.");
+	        			log.error(errorMessage);
+	        			model.put("errorMessage", errorMessage);
+	        		}
 	        	}      
 		 }
 		 session.setAttribute(TwitterConnectUtil.SOCIAL_NETWORK_NAME, twitter);
@@ -195,8 +214,7 @@ public class SocialNetworksController {
     		,ResourceRequest request
             ,ResourceResponse response
             ) throws Exception {
-		
-		log.error("revokeSocialNetwork");
+				
 		User user = PortalUtil.getUser(request);
 		HttpServletRequest servletRequest = PortalUtil.getHttpServletRequest(request);
         HttpSession session = servletRequest.getSession();

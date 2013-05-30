@@ -1,4 +1,9 @@
-<%@page import="com.rcs.socialnetworks.linkedin.LinkedInConnectUtil" %>
+<%@page 
+		import="com.rcs.socialnetworks.linkedin.LinkedInConnectUtil"
+		import="com.rcs.socialnetworks.google.GoogleConnectUtil"
+		import="com.rcs.socialnetworks.facebook.FacebookConnectUtil"	 
+		import="com.rcs.socialnetworks.twitter.TwitterConnectUtil"
+		import="org.apache.commons.lang.StringUtils" %>
 <div id="login_navigation">
     <ul>
         <%
@@ -6,6 +11,17 @@
             Object twitterAuthUrl = request.getAttribute("twitterAuthUrl");
             Object googleAuthUrl = request.getAttribute("googleAuthUrl");
             Object facebookAuthUrl = request.getAttribute("facebookAuthUrl");
+            boolean twitterIsErrorFree = true;
+            boolean linkedInIsErrorFree = true;
+            boolean googleIsErrorFree = true;
+            boolean facebookIsErrorFree = true;            
+            if(request.getAttribute("errorMessage") != null) {
+            	String errorMessage = (String) request.getAttribute("errorMessage");
+            	twitterIsErrorFree = !StringUtils.containsIgnoreCase(errorMessage, "twitter");
+            	linkedInIsErrorFree = !StringUtils.containsIgnoreCase(errorMessage, "linkedin");
+            	googleIsErrorFree = !StringUtils.containsIgnoreCase(errorMessage, "google");
+            	facebookIsErrorFree = !StringUtils.containsIgnoreCase(errorMessage, "facebook");
+            }
         %>
         <li>
             Enable contacts from:
@@ -69,7 +85,7 @@
         </li>
         <%--<c:if test="${!empty linkedInAuthUrl}">--%>
         <%
-            if (linkedInAuthUrl == null) {
+            if (new LinkedInConnectUtil().isEnabled() && linkedInAuthUrl == null && linkedInIsErrorFree) {
         %>
         <li>
             <a id="linkedin" class="socialnetwork" href="#" >
@@ -83,7 +99,7 @@
         <%--</c:if>--%>
         <%--<c:if test="${!empty twitterAuthUrl}">--%>
         <%
-            if (twitterAuthUrl == null) {
+            if (new TwitterConnectUtil().isEnabled() && twitterAuthUrl == null && twitterIsErrorFree) {
         %>
         <li>
             <a id="twitter" class="socialnetwork" href="#" >
@@ -96,7 +112,7 @@
         %>
         <%--</c:if>--%>
 		<%
-            if (googleAuthUrl == null) {
+            if (new GoogleConnectUtil().isEnabled() && googleAuthUrl == null && googleIsErrorFree) {
         %>
         <li>
             <a id="google" class="socialnetwork" href="#" >
@@ -108,7 +124,7 @@
             }
         %>
         <%
-            if (facebookAuthUrl == null) {
+            if (new FacebookConnectUtil().isEnabled()&& facebookAuthUrl == null && facebookIsErrorFree) {
         %>
         <li>
             <a id="facebook" class="socialnetwork" href="#" >

@@ -151,6 +151,7 @@
       
 </script>
 <div id="socialnetwork-portlet">
+	<%@include file="messages.jsp" %>
 	<jsp:include page="navigation.jsp" />
 	<div id="mynetwork"></div>
 </div>
